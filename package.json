@@ -1,0 +1,24 @@
+{
+  "name": "bbstats",
+  "version": "1.0.0",
+  "description": "Baseball stats restful api",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luciancooper/bbstats.git"
+  },
+  "keywords": [
+    "baseball",
+    "api",
+    "restful"
+  ],
+  "author": "Lucian Cooper <cooperlucian@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/luciancooper/bbstats/issues"
+  },
+  "homepage": "https://github.com/luciancooper/bbstats#readme"
+}
