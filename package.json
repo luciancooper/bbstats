@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon --watch src src/server.js",
-    "lint": "eslint --ignore-path .gitignore src",
+    "lint": "eslint --ignore-path .gitignore -f pretty src",
+    "lint:fix": "eslint --ignore-path .gitignore -f pretty src --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,10 +24,23 @@
     "url": "https://github.com/luciancooper/bbstats/issues"
   },
   "homepage": "https://github.com/luciancooper/bbstats#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint -f pretty"
+    ]
+  },
   "devDependencies": {
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-formatter-pretty": "^2.1.1",
     "eslint-plugin-import": "^2.18.2",
+    "husky": "^3.0.5",
+    "lint-staged": "^9.2.5",
     "nodemon": "^1.19.2"
   },
   "dependencies": {
