@@ -2,12 +2,15 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     app = express();
 
+// configure env
+require('dotenv').config();
+
 // setup body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // ports
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // routes
 app.get('/', (req, res) => {
