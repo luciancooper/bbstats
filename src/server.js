@@ -2,6 +2,7 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     morgan = require('morgan'),
     cors = require('cors'),
+    { initPool } = require('./db/service'),
     app = express();
 
 // configure env
@@ -25,5 +26,14 @@ app.get('/', (req, res) => {
     res.send('bbstats api');
 });
 
-// listen
-app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
+// connect to database
+initPool((err) => {
+    if (err) {
+        console.log(`Database connection error: ${err}`);
+        process.exit(1);
+    }
+    // listen
+    app.listen(PORT, () => {
+        console.log(`App listening on port ${PORT}`);
+    });
+});
