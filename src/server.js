@@ -21,10 +21,8 @@ app.use(cors());
 // ports
 const PORT = process.env.PORT || 3000;
 
-// routes
-app.get('/', (req, res) => {
-    res.send('bbstats api');
-});
+// api router
+app.use(require('./api'));
 
 // connect to database
 initPool((err) => {
