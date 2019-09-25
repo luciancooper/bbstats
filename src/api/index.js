@@ -1,5 +1,8 @@
 const router = require('express').Router();
 
+// add teams route
+router.get('/teams/:year', require('./teams-controller'));
+
 // error 404
 router.use((req, res, next) => {
     res.status(404).json({
