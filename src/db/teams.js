@@ -1,6 +1,6 @@
 const { db } = require('./service');
 
-function teamData(year) {
+function teamData({ year }) {
     return db().collection('teams').aggregate([
         { $match: { years: year } },
         { $replaceWith: { team: '$_id', league: '$lg' } },
