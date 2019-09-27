@@ -6,6 +6,15 @@ router.param('year', param('year', 'Invalid year')
     .isInt({ min: 1950, max: 2020 })
     .toInt());
 
+// team param validator
+router.param('team', param('team', 'Invalid team id')
+    .isAlphanumeric('en-US')
+    .withMessage('Team id must be alpha numeric')
+    .isUppercase()
+    .withMessage('Team id must be upper case')
+    .isLength({ min: 3, max: 3 })
+    .withMessage('Team id must be 3 characters'));
+
 // validation middleware
 function validate(req, res, next) {
     const errors = validationResult(req);
@@ -30,6 +39,9 @@ function validate(req, res, next) {
 
 // add teams route
 router.get('/teams/:year', validate, require('./teams-controller'));
+
+// add rosters route
+router.get('/rosters/:year/:team?', validate, require('./rosters-controller'));
 
 // error 404
 router.use((req, res, next) => {
