@@ -1,4 +1,5 @@
-const { db } = require('./service');
+const { db } = require('./service'),
+    DataCursor = require('./cursor');
 
 function rosterData({ year, team }) {
     let match,
@@ -11,7 +12,7 @@ function rosterData({ year, team }) {
     } else {
         [match, filter] = [{ 'teams.year': year }, { $eq: ['$$team.year', year] }];
     }
-    return db().collection('players').aggregate([
+    return new DataCursor(db().collection('players').aggregate([
         // match nested teams
         { $match: match },
         // filter nested teams
@@ -48,7 +49,7 @@ function rosterData({ year, team }) {
         { $replaceWith: { team: '$_id', roster: '$roster' } },
         // sort by team
         { $sort: { team: 1 } },
-    ]);
+    ]));
 }
 
 module.exports = rosterData;

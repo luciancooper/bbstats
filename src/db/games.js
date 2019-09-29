@@ -1,4 +1,5 @@
-const { db } = require('./service');
+const { db } = require('./service'),
+    DataCursor = require('./cursor');
 
 function gameData({ year, team }) {
     let match;
@@ -7,10 +8,10 @@ function gameData({ year, team }) {
     } else {
         match = { year };
     }
-    return db().collection('games').aggregate([
+    return new DataCursor(db().collection('games').aggregate([
         { $match: match },
         { $sort: { month: 1, day: 1, gn: 1 } },
-    ]);
+    ]));
 }
 
 module.exports = gameData;
