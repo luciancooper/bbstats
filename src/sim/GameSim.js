@@ -1,5 +1,8 @@
-class GameSim {
+const { EventEmitter } = require('events');
+
+class GameSim extends EventEmitter {
     constructor() {
+        super();
         // Year
         this.year = null;
         // Game ID - YYYYMMDDHHHAAAG
@@ -69,6 +72,12 @@ class GameSim {
 
     simError(message) {
         return new Error(`[${this.gid} - ${this.eid}] ${message}`);
+    }
+
+    async simGames(games, cb) {
+        this.addListener('data', cb);
+        await games.each(this.simGame, this);
+        this.removeListener('data', cb);
     }
 
     simGame(data) {
@@ -187,7 +196,7 @@ class GameSim {
     }
 
     final(data) {
-        // nothing
+        this.emit('data', { gid: this.gid }, { score: this.score.slice() });
     }
 
     bitindexes(flag) {
