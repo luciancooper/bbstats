@@ -36,7 +36,7 @@ class GameSim extends EventEmitter {
         this.abinx = [0, 0];
         // Batting out of turn - flag if team is the process of batting out of order (very rare)
         this.bootflg = [0, 0];
-        this.boot = [[], []];
+        this.bootinx = [[], []];
     }
 
     get date() {
@@ -65,7 +65,7 @@ class GameSim extends EventEmitter {
 
     get lp() {
         if (this.bootflg[this.t]) {
-            return this.boot[this.t][this.boot[this.t].length - 1];
+            return this.bootinx[this.t][this.bootinx[this.t].length - 1];
         }
         return this.abinx[this.t];
     }
@@ -106,7 +106,7 @@ class GameSim extends EventEmitter {
                     break;
                 }
             } catch (e) {
-                throw this.simError(`Error Occured while Processing ${data.events[i]}`);
+                throw this.simError(`Error Occured while Processing ${data.events[i]}: ${e}`);
             }
         }
         this.final(data);
@@ -130,7 +130,7 @@ class GameSim extends EventEmitter {
         this.lob = [0, 0];
         this.abinx = [0, 0];
         this.bootflg = [0, 0];
-        this.boot = [[], []];
+        this.bootinx = [[], []];
     }
 
     lineup(data) {
@@ -147,7 +147,14 @@ class GameSim extends EventEmitter {
         this.eid += 1;
         this.ecode = Number(line[2]);
         this.emod = line[3].split('/');
-        if (this.bootflg[this.t] & 2) this.bootcycle();
+        // boot cycle
+        if (this.bootflg[this.t] & 2) {
+            const i = this.abinx[this.t],
+                j = Math.max(...this.bootinx[this.t]);
+            this.abinx[this.t] = (this.abinx[this.t] + (j - i + 1)) % 9;
+            this.bootflg[this.t] = 0;
+            this.bootinx[this.t] = [];
+        }
         this.event(line);
         this.ecode = null;
         this.emod = null;
@@ -175,16 +182,8 @@ class GameSim extends EventEmitter {
 
     boot(line) {
         if (Number(line[1]) !== this.t) throw this.simError(`BOOT team error b[${line[1]}] != sim[${this.t}]`);
-        this.boot[this.t] += [Number(line[2])];
+        this.bootinx[this.t].push(Number(line[2]));
         this.bootflg[this.t] = 1;
-    }
-
-    bootcycle() {
-        const i = this.abinx[this.t],
-            j = Math.max(...this.boot[this.t]);
-        this.abinx[this.t] = (this.abinx[this.t] + (j - i + 1)) % 9;
-        this.bootflag[this.t] = 0;
-        this.boot[this.t] = [];
     }
 
     padj(line) {
