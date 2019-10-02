@@ -1,18 +1,13 @@
 const gameData = require('../db/games'),
-    GameSim = require('../sim/GameSim');
+    GameSim = require('../sim/GameSim'),
+    ChunkedResponse = require('./chunked');
 
 async function simScores(req, res, next) {
-    res.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Transfer-Encoding': 'chunked',
-    });
-    let last = '{';
+    const chunked = new ChunkedResponse(res);
     await new GameSim().simGames(gameData(req.params), ({ gid }, { score }) => {
-        res.write(last);
-        last = `'${gid}':[${score[0]},${score[1]}],`;
+        chunked.write({ gid, score });
     });
-    res.write(`${last.slice(0, -1)}}`);
-    res.end();
+    chunked.end();
 }
 
 module.exports = simScores;
