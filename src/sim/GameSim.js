@@ -242,6 +242,13 @@ class GameSim extends EventEmitter {
         }
     }
 
+    checkRbi(rbi, norbi) {
+        if (rbi === 1 && norbi === 1) throw this.simError('Both rbi and norbi flags present');
+        if (rbi === 1) return true;
+        if (norbi === 1) return false;
+        return (this.ecode <= 10 && !this.emod.includes('GDP'));
+    }
+
     scorerun() {
         this.score[this.t] += 1;
     }
