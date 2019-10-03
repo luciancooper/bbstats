@@ -46,6 +46,9 @@ router.get('/rosters/:year/:team?', validate, require('./rosters-controller'));
 // add sim scores route
 router.get('/scores/:year/:team?', validate, require('./scores-controller'));
 
+// add sim game stats route
+router.get('/gamestats/:year/:team?', validate, require('./gamestats-controller'));
+
 // error 404
 router.use((req, res, next) => {
     res.status(404).json({
