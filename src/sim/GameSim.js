@@ -70,6 +70,10 @@ class GameSim extends EventEmitter {
         return this.abinx[this.t];
     }
 
+    get bfp() {
+        return this.lpos[this.t][this.lp];
+    }
+
     simError(message) {
         return new Error(`[${this.gid} - ${this.eid}] ${message}`);
     }

@@ -40,7 +40,7 @@ class GameStats extends GameSim {
                 if (e[0] !== 'I') this.stat('pstat', this.dt, e[0]);
             }
             if (this.emod.includes('GDP')) ekey = [...ekey, 'GDP'];
-            if (!this.nopitcher || this.lpos[this.t][this.lp] !== 0) {
+            if (!this.nopitcher || this.bfp !== 0) {
                 this.stat('bstat', this.t, ...ekey);
             }
             // Batter Faced
