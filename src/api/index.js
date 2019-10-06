@@ -47,7 +47,11 @@ router.get('/rosters/:year/:team?', validate, require('./rosters-controller'));
 router.get('/scores/:year/:team?', validate, require('./scores-controller'));
 
 // add sim game stats route
-router.get('/gamestats/:year/:team?', validate, require('./gamestats-controller'));
+const { gamesBatting, gamesPitching, gamesDefense } = require('./gamestats-controller');
+
+router.get('/games/batting/:year/:team?', validate, gamesBatting);
+router.get('/games/pitching/:year/:team?', validate, gamesPitching);
+router.get('/games/defense/:year/:team?', validate, gamesDefense);
 
 // error 404
 router.use((req, res, next) => {
