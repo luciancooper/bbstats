@@ -100,7 +100,7 @@ class RosterSim extends GameSim {
                 this.bflg ^= 1 << i;
                 this.bases[i] = null;
             } else if (a.charAt(0) === 'H') {
-                this.scorerun(a.slice(2), ...this.bases[i], rbpid);
+                this.scorerun(a.slice(2), ...this.bases[i], rbpid, rppid);
                 this.bflg ^= 1 << i;
                 this.bases[i] = null;
             } else if (i !== Number(a.charAt(0)) - 1) {
@@ -116,7 +116,7 @@ class RosterSim extends GameSim {
             if (badv.charAt(0) === 'X') {
                 this.outinc();
             } else if (badv.charAt(0) === 'H') {
-                this.scorerun(badv.slice(2), bpid, rppid, rbpid);
+                this.scorerun(badv.slice(2), bpid, rppid, rbpid, rppid);
             } else {
                 this.bases[Number(badv.charAt(0)) - 1] = [bpid, rppid];
                 this.bflg |= 1 << Number(badv.charAt(0)) - 1;
