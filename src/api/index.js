@@ -1,5 +1,6 @@
 const router = require('express').Router(),
-    { param, validationResult } = require('express-validator');
+    { param } = require('express-validator'),
+    validate = require('./validate');
 
 // year param validator
 router.param('year', param('year', 'Invalid year')
@@ -14,28 +15,6 @@ router.param('team', param('team', 'Invalid team id')
     .withMessage('Team id must be upper case')
     .isLength({ min: 3, max: 3 })
     .withMessage('Team id must be 3 characters'));
-
-// validation middleware
-function validate(req, res, next) {
-    const errors = validationResult(req);
-    if (errors.isEmpty()) {
-        next();
-        return;
-    }
-    // error 400
-    res.status(400).json({
-        code: 400,
-        title: 'Invalid Request',
-        'invalid-params': errors.array().reduce((acc, e) => {
-            if (!acc[e.param]) {
-                return { ...acc, [e.param]: { value: e.value, error: e.msg } };
-            }
-            const x = acc[e.param].error;
-            acc[e.param].error = [...(Array.isArray(x) ? x : [x]), e.msg];
-            return acc;
-        }, {}),
-    });
-}
 
 // add teams route
 router.get('/teams/:year', validate, require('./controllers/teams'));
