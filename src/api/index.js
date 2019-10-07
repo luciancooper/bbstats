@@ -38,20 +38,18 @@ function validate(req, res, next) {
 }
 
 // add teams route
-router.get('/teams/:year', validate, require('./teams-controller'));
+router.get('/teams/:year', validate, require('./controllers/teams'));
 
 // add rosters route
-router.get('/rosters/:year/:team?', validate, require('./rosters-controller'));
+router.get('/rosters/:year/:team?', validate, require('./controllers/rosters'));
 
-// add sim scores route
-router.get('/scores/:year/:team?', validate, require('./scores-controller'));
+// add games route
+const games = require('./controllers/games');
 
-// add sim game stats route
-const { gamesBatting, gamesPitching, gamesDefense } = require('./gamestats-controller');
-
-router.get('/games/batting/:year/:team?', validate, gamesBatting);
-router.get('/games/pitching/:year/:team?', validate, gamesPitching);
-router.get('/games/defense/:year/:team?', validate, gamesDefense);
+router.get('/games/scores/:year/:team?', validate, games.scores);
+router.get('/games/batting/:year/:team?', validate, games.batting);
+router.get('/games/pitching/:year/:team?', validate, games.pitching);
+router.get('/games/defense/:year/:team?', validate, games.defense);
 
 // error 404
 router.use((req, res, next) => {

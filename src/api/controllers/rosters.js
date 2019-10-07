@@ -1,4 +1,4 @@
-const rosterData = require('../db/rosters');
+const rosterData = require('../../db/rosters');
 
 async function getRosters(req, res, next) {
     try {

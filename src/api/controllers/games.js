@@ -1,11 +1,21 @@
-const gameData = require('../db/games'),
-    GameStats = require('../sim/GameStats'),
-    StatIndexer = require('../sim/StatIndexer'),
-    ChunkedResponse = require('./chunked');
+const gameData = require('../../db/games'),
+    GameSim = require('../../sim/GameSim'),
+    GameStats = require('../../sim/GameStats'),
+    StatIndexer = require('../../sim/StatIndexer'),
+    ChunkedResponse = require('../chunked');
+
+async function scores(req, res, next) {
+    const sim = new GameSim(),
+        chunked = new ChunkedResponse(res);
+    await sim.simGames(gameData(req.params), ({ gid }, { score }) => {
+        chunked.write({ gid, score });
+    });
+    chunked.end();
+}
 
 const bstatIndexer = new StatIndexer('O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB', 'HBP', 'K', 'I', 'SH', 'SF', 'GDP', 'R', 'RBI', 'SB', 'CS', 'PO');
 
-async function gamesBatting(req, res, next) {
+async function batting(req, res, next) {
     const sim = new GameStats(),
         chunked = new ChunkedResponse(res),
         stat = bstatIndexer.emptySet(2);
@@ -31,7 +41,7 @@ async function gamesBatting(req, res, next) {
 
 const pstatIndexer = new StatIndexer('W', 'L', 'SV', 'IP', 'BF', 'R', 'ER', 'S', 'D', 'T', 'HR', 'BB', 'HBP', 'IBB', 'K', 'BK', 'WP', 'PO', 'GDP');
 
-async function gamesPitching(req, res, next) {
+async function pitching(req, res, next) {
     const sim = new GameStats(),
         chunked = new ChunkedResponse(res),
         stat = pstatIndexer.emptySet(2);
@@ -57,7 +67,7 @@ async function gamesPitching(req, res, next) {
 
 const dstatIndexer = new StatIndexer('UR', 'TUR', 'P', 'A', 'E', 'PB');
 
-async function gamesDefense(req, res, next) {
+async function defense(req, res, next) {
     const sim = new GameStats(),
         chunked = new ChunkedResponse(res),
         stat = dstatIndexer.emptySet(2);
@@ -82,7 +92,8 @@ async function gamesDefense(req, res, next) {
 }
 
 module.exports = {
-    gamesBatting,
-    gamesPitching,
-    gamesDefense,
+    scores,
+    batting,
+    pitching,
+    defense,
 };

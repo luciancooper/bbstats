@@ -1,4 +1,4 @@
-const teamData = require('../db/teams');
+const teamData = require('../../db/teams');
 
 async function getTeams(req, res, next) {
     try {
