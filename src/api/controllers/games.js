@@ -7,7 +7,7 @@ const gameData = require('../../db/games'),
 async function scores(req, res, next) {
     const sim = new GameSim(),
         chunked = new ChunkedResponse(res);
-    await sim.simGames(gameData(req.params), ({ gid }, { score }) => {
+    await sim.simScores(gameData(req.params), ({ gid }, { score }) => {
         chunked.write({ gid, score });
     });
     chunked.end();

@@ -78,10 +78,10 @@ class GameSim extends EventEmitter {
         return new Error(`[${this.gid} - ${this.eid}] ${message}`);
     }
 
-    async simGames(games, cb) {
-        this.addListener('data', cb);
+    async simScores(games, cb) {
+        this.addListener('score', cb);
         await games.each(this.simGame, this);
-        this.removeListener('data', cb);
+        this.removeListener('score', cb);
     }
 
     simGame(data) {
@@ -199,7 +199,7 @@ class GameSim extends EventEmitter {
     }
 
     final(data) {
-        this.emit('data', { gid: this.gid }, { score: this.score.slice() });
+        this.emit('score', { gid: this.gid }, { score: this.score.slice() });
     }
 
     bitindexes(flag) {
