@@ -23,10 +23,13 @@ async function batting(req, res, next) {
             return acc;
         }, {});
     });
-    sim.addListener('bstat', ({ tid, pid }, keys) => {
-        bstatIndexer.apply(stats[tid][pid], ...keys);
-    });
-    await gameData(req.params).each(sim.simGame, sim);
+    await sim.simStats(
+        'bstat',
+        gameData(req.params),
+        ({ tid, pid }, keys) => {
+            bstatIndexer.apply(stats[tid][pid], ...keys);
+        },
+    );
     res.status(200).json(stats);
 }
 
@@ -41,10 +44,13 @@ async function pitching(req, res, next) {
             return acc;
         }, {});
     });
-    sim.addListener('pstat', ({ tid, pid }, keys) => {
-        pstatIndexer.apply(stats[tid][pid], ...keys);
-    });
-    await gameData(req.params).each(sim.simGame, sim);
+    await sim.simStats(
+        'pstat',
+        gameData(req.params),
+        ({ tid, pid }, keys) => {
+            pstatIndexer.apply(stats[tid][pid], ...keys);
+        },
+    );
     res.status(200).json(stats);
 }
 
@@ -59,10 +65,13 @@ async function defense(req, res, next) {
             return acc;
         }, {});
     });
-    sim.addListener('dstat', ({ tid, pid }, keys) => {
-        dstatIndexer.apply(stats[tid][pid], ...keys);
-    });
-    await gameData(req.params).each(sim.simGame, sim);
+    await sim.simStats(
+        'dstat',
+        gameData(req.params),
+        ({ tid, pid }, keys) => {
+            dstatIndexer.apply(stats[tid][pid], ...keys);
+        },
+    );
     res.status(200).json(stats);
 }
 

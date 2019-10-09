@@ -7,9 +7,12 @@ const gameData = require('../../db/games'),
 async function scores(req, res, next) {
     const sim = new GameSim(),
         chunked = new ChunkedResponse(res);
-    await sim.simScores(gameData(req.params), ({ gid }, { score }) => {
-        chunked.write({ gid, score });
-    });
+    await sim.simScores(
+        gameData(req.params),
+        ({ gid }, { score }) => {
+            chunked.write({ gid, score });
+        },
+    );
     chunked.end();
 }
 
@@ -19,23 +22,26 @@ async function batting(req, res, next) {
     const sim = new GameStats(),
         chunked = new ChunkedResponse(res),
         stat = bstatIndexer.emptySet(2);
-    sim.addListener('bstat', ({ t }, keys) => {
-        bstatIndexer.apply(stat[t], ...keys);
-    });
-    await gameData(req.params).each((game) => {
-        stat.forEach((a) => a.fill(0));
-        sim.simGame(game);
-        chunked.write({
-            gid: sim.gid,
-            team: sim.teams[0],
-            stat: stat[0],
-        });
-        chunked.write({
-            gid: sim.gid,
-            team: sim.teams[1],
-            stat: stat[1],
-        });
-    });
+    await sim.simStats(
+        'bstat',
+        gameData(req.params),
+        ({ t }, keys) => {
+            bstatIndexer.apply(stat[t], ...keys);
+        },
+        ({ gid }) => {
+            chunked.write({
+                gid,
+                team: gid.slice(11, 14),
+                stat: stat[0],
+            });
+            chunked.write({
+                gid,
+                team: gid.slice(8, 11),
+                stat: stat[1],
+            });
+            stat.forEach((a) => a.fill(0));
+        },
+    );
     chunked.end();
 }
 
@@ -45,23 +51,26 @@ async function pitching(req, res, next) {
     const sim = new GameStats(),
         chunked = new ChunkedResponse(res),
         stat = pstatIndexer.emptySet(2);
-    sim.addListener('pstat', ({ t }, keys) => {
-        pstatIndexer.apply(stat[t], ...keys);
-    });
-    await gameData(req.params).each((game) => {
-        stat.forEach((a) => a.fill(0));
-        sim.simGame(game);
-        chunked.write({
-            gid: sim.gid,
-            team: sim.teams[0],
-            stat: stat[0],
-        });
-        chunked.write({
-            gid: sim.gid,
-            team: sim.teams[1],
-            stat: stat[1],
-        });
-    });
+    await sim.simStats(
+        'pstat',
+        gameData(req.params),
+        ({ t }, keys) => {
+            pstatIndexer.apply(stat[t], ...keys);
+        },
+        ({ gid }) => {
+            chunked.write({
+                gid,
+                team: gid.slice(11, 14),
+                stat: stat[0],
+            });
+            chunked.write({
+                gid,
+                team: gid.slice(8, 11),
+                stat: stat[1],
+            });
+            stat.forEach((a) => a.fill(0));
+        },
+    );
     chunked.end();
 }
 
@@ -71,23 +80,26 @@ async function defense(req, res, next) {
     const sim = new GameStats(),
         chunked = new ChunkedResponse(res),
         stat = dstatIndexer.emptySet(2);
-    sim.addListener('dstat', ({ t }, keys) => {
-        dstatIndexer.apply(stat[t], ...keys);
-    });
-    await gameData(req.params).each((game) => {
-        stat.forEach((a) => a.fill(0));
-        sim.simGame(game);
-        chunked.write({
-            gid: sim.gid,
-            team: sim.teams[0],
-            stat: stat[0],
-        });
-        chunked.write({
-            gid: sim.gid,
-            team: sim.teams[1],
-            stat: stat[1],
-        });
-    });
+    await sim.simStats(
+        'dstat',
+        gameData(req.params),
+        ({ t }, keys) => {
+            dstatIndexer.apply(stat[t], ...keys);
+        },
+        ({ gid }) => {
+            chunked.write({
+                gid,
+                team: gid.slice(11, 14),
+                stat: stat[0],
+            });
+            chunked.write({
+                gid,
+                team: gid.slice(8, 11),
+                stat: stat[1],
+            });
+            stat.forEach((a) => a.fill(0));
+        },
+    );
     chunked.end();
 }
 
