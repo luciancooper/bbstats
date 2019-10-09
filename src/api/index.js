@@ -20,7 +20,12 @@ router.param('team', param('team', 'Invalid team id')
 router.get('/teams/:year', validate, require('./controllers/teams'));
 
 // add rosters route
-router.get('/rosters/:year/:team?', validate, require('./controllers/rosters'));
+const rosters = require('./controllers/rosters');
+
+router.get('/rosters/batting/:year/:team?', validate, rosters.batting);
+router.get('/rosters/pitching/:year/:team?', validate, rosters.pitching);
+router.get('/rosters/defense/:year/:team?', validate, rosters.defense);
+router.get('/rosters/:year/:team?', validate, rosters.data);
 
 // add games route
 const games = require('./controllers/games');
