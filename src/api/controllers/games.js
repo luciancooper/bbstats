@@ -20,28 +20,44 @@ const bstatIndexer = new StatIndexer('O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB',
 
 async function batting(req, res, next) {
     const sim = new GameStats(),
-        chunked = new ChunkedResponse(res),
-        stat = bstatIndexer.emptySet(2);
-    await sim.simStats(
-        'bstat',
-        gameData(req.params),
-        ({ t }, keys) => {
-            bstatIndexer.apply(stat[t], ...keys);
-        },
-        ({ gid }) => {
-            chunked.write({
-                gid,
-                team: gid.slice(11, 14),
-                stat: stat[0],
-            });
-            chunked.write({
-                gid,
-                team: gid.slice(8, 11),
-                stat: stat[1],
-            });
-            stat.forEach((a) => a.fill(0));
-        },
-    );
+        chunked = new ChunkedResponse(res);
+    if (req.params.team) {
+        const stat = bstatIndexer.emptySet(),
+            { team } = req.params;
+        await sim.simStats(
+            'bstat',
+            gameData(req.params),
+            ({ tid }, keys) => {
+                if (tid === team) bstatIndexer.apply(stat, ...keys);
+            },
+            ({ gid }) => {
+                chunked.write({ gid, team, stat });
+                stat.fill(0);
+            },
+        );
+    } else {
+        const stat = bstatIndexer.emptySet(2);
+        await sim.simStats(
+            'bstat',
+            gameData(req.params),
+            ({ t }, keys) => {
+                bstatIndexer.apply(stat[t], ...keys);
+            },
+            ({ gid }) => {
+                chunked.write({
+                    gid,
+                    team: gid.slice(11, 14),
+                    stat: stat[0],
+                });
+                chunked.write({
+                    gid,
+                    team: gid.slice(8, 11),
+                    stat: stat[1],
+                });
+                stat.forEach((a) => a.fill(0));
+            },
+        );
+    }
     chunked.end();
 }
 
@@ -49,28 +65,44 @@ const pstatIndexer = new StatIndexer('W', 'L', 'SV', 'IP', 'BF', 'R', 'ER', 'S',
 
 async function pitching(req, res, next) {
     const sim = new GameStats(),
-        chunked = new ChunkedResponse(res),
-        stat = pstatIndexer.emptySet(2);
-    await sim.simStats(
-        'pstat',
-        gameData(req.params),
-        ({ t }, keys) => {
-            pstatIndexer.apply(stat[t], ...keys);
-        },
-        ({ gid }) => {
-            chunked.write({
-                gid,
-                team: gid.slice(11, 14),
-                stat: stat[0],
-            });
-            chunked.write({
-                gid,
-                team: gid.slice(8, 11),
-                stat: stat[1],
-            });
-            stat.forEach((a) => a.fill(0));
-        },
-    );
+        chunked = new ChunkedResponse(res);
+    if (req.params.team) {
+        const stat = pstatIndexer.emptySet(),
+            { team } = req.params;
+        await sim.simStats(
+            'pstat',
+            gameData(req.params),
+            ({ tid }, keys) => {
+                if (tid === team) pstatIndexer.apply(stat, ...keys);
+            },
+            ({ gid }) => {
+                chunked.write({ gid, team, stat });
+                stat.fill(0);
+            },
+        );
+    } else {
+        const stat = pstatIndexer.emptySet(2);
+        await sim.simStats(
+            'pstat',
+            gameData(req.params),
+            ({ t }, keys) => {
+                pstatIndexer.apply(stat[t], ...keys);
+            },
+            ({ gid }) => {
+                chunked.write({
+                    gid,
+                    team: gid.slice(11, 14),
+                    stat: stat[0],
+                });
+                chunked.write({
+                    gid,
+                    team: gid.slice(8, 11),
+                    stat: stat[1],
+                });
+                stat.forEach((a) => a.fill(0));
+            },
+        );
+    }
     chunked.end();
 }
 
@@ -78,28 +110,44 @@ const dstatIndexer = new StatIndexer('UR', 'TUR', 'P', 'A', 'E', 'PB');
 
 async function defense(req, res, next) {
     const sim = new GameStats(),
-        chunked = new ChunkedResponse(res),
-        stat = dstatIndexer.emptySet(2);
-    await sim.simStats(
-        'dstat',
-        gameData(req.params),
-        ({ t }, keys) => {
-            dstatIndexer.apply(stat[t], ...keys);
-        },
-        ({ gid }) => {
-            chunked.write({
-                gid,
-                team: gid.slice(11, 14),
-                stat: stat[0],
-            });
-            chunked.write({
-                gid,
-                team: gid.slice(8, 11),
-                stat: stat[1],
-            });
-            stat.forEach((a) => a.fill(0));
-        },
-    );
+        chunked = new ChunkedResponse(res);
+    if (req.params.team) {
+        const stat = dstatIndexer.emptySet(),
+            { team } = req.params;
+        await sim.simStats(
+            'dstat',
+            gameData(req.params),
+            ({ tid }, keys) => {
+                if (tid === team) dstatIndexer.apply(stat, ...keys);
+            },
+            ({ gid }) => {
+                chunked.write({ gid, team, stat });
+                stat.fill(0);
+            },
+        );
+    } else {
+        const stat = dstatIndexer.emptySet(2);
+        await sim.simStats(
+            'dstat',
+            gameData(req.params),
+            ({ t }, keys) => {
+                dstatIndexer.apply(stat[t], ...keys);
+            },
+            ({ gid }) => {
+                chunked.write({
+                    gid,
+                    team: gid.slice(11, 14),
+                    stat: stat[0],
+                });
+                chunked.write({
+                    gid,
+                    team: gid.slice(8, 11),
+                    stat: stat[1],
+                });
+                stat.forEach((a) => a.fill(0));
+            },
+        );
+    }
     chunked.end();
 }
 

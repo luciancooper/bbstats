@@ -18,7 +18,7 @@ class GameStats extends GameSim {
 
     stat(type, t, ...keys) {
         if (!keys.length) return;
-        this.emit(type, { gid: this.gid, t }, keys);
+        this.emit(type, { gid: this.gid, t, tid: this.teams[t] }, keys);
     }
 
     event(line) {
