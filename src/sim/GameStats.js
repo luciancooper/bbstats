@@ -12,7 +12,7 @@ class GameStats extends GameSim {
         if (gamecb) {
             await games.each((game) => {
                 this.simGame(game);
-                gamecb({ gid: game._id });
+                gamecb(game);
             }, this);
         } else {
             await games.each(this.simGame, this);

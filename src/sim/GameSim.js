@@ -117,7 +117,7 @@ class GameSim extends EventEmitter {
     }
 
     init(data) {
-        this.gid = data._id;
+        this.gid = data.gid;
         this.year = data.year;
         this.eid = 0;
         this.teams = [data.away, data.home];
