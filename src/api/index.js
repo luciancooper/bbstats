@@ -17,7 +17,12 @@ router.param('team', param('team', 'Invalid team id')
     .withMessage('Team id must be 3 characters'));
 
 // add teams route
-router.get('/teams/:year', validate, require('./controllers/teams'));
+const teams = require('./controllers/teams');
+
+router.get('/teams/batting/:year', validate, teams.batting);
+router.get('/teams/pitching/:year', validate, teams.pitching);
+router.get('/teams/defense/:year', validate, teams.defense);
+router.get('/teams/:year', validate, teams.data);
 
 // add rosters route
 const rosters = require('./controllers/rosters');

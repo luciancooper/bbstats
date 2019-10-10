@@ -24,6 +24,22 @@ class DataCursor {
         }
         return results;
     }
+
+    async reduce(cb, first, thisArg) {
+        let acc = first,
+            doc = await this.cursor.next();
+        if (acc == null) {
+            acc = doc;
+            if (doc != null) {
+                doc = await this.cursor.next();
+            }
+        }
+        while (doc != null) {
+            acc = cb.call(thisArg, acc, doc);
+            doc = await this.cursor.next();
+        }
+        return acc;
+    }
 }
 
 module.exports = DataCursor;

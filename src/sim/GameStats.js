@@ -9,10 +9,14 @@ class GameStats extends GameSim {
 
     async simStats(type, games, cb, gamecb) {
         this.addListener(type, cb);
-        await games.each((game) => {
-            this.simGame(game);
-            gamecb({ gid: game._id });
-        }, this);
+        if (gamecb) {
+            await games.each((game) => {
+                this.simGame(game);
+                gamecb({ gid: game._id });
+            }, this);
+        } else {
+            await games.each(this.simGame, this);
+        }
         this.removeListener(type, cb);
     }
 
