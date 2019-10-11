@@ -43,17 +43,11 @@ async function batting(req, res, next) {
             ({ t }, keys) => {
                 bstatIndexer.apply(stat[t], ...keys);
             },
-            ({ gid }) => {
-                chunked.write({
-                    gid,
-                    team: gid.slice(11, 14),
-                    stat: stat[0],
-                });
-                chunked.write({
-                    gid,
-                    team: gid.slice(8, 11),
-                    stat: stat[1],
-                });
+            ({ gid, away, home }) => {
+                chunked.write(
+                    { gid, team: away, stats: stat[0] },
+                    { gid, team: home, stats: stat[1] },
+                );
                 stat.forEach((a) => a.fill(0));
             },
         );
@@ -88,17 +82,11 @@ async function pitching(req, res, next) {
             ({ t }, keys) => {
                 pstatIndexer.apply(stat[t], ...keys);
             },
-            ({ gid }) => {
-                chunked.write({
-                    gid,
-                    team: gid.slice(11, 14),
-                    stat: stat[0],
-                });
-                chunked.write({
-                    gid,
-                    team: gid.slice(8, 11),
-                    stat: stat[1],
-                });
+            ({ gid, away, home }) => {
+                chunked.write(
+                    { gid, team: away, stats: stat[0] },
+                    { gid, team: home, stats: stat[1] },
+                );
                 stat.forEach((a) => a.fill(0));
             },
         );
@@ -133,17 +121,11 @@ async function defense(req, res, next) {
             ({ t }, keys) => {
                 dstatIndexer.apply(stat[t], ...keys);
             },
-            ({ gid }) => {
-                chunked.write({
-                    gid,
-                    team: gid.slice(11, 14),
-                    stat: stat[0],
-                });
-                chunked.write({
-                    gid,
-                    team: gid.slice(8, 11),
-                    stat: stat[1],
-                });
+            ({ gid, away, home }) => {
+                chunked.write(
+                    { gid, team: away, stats: stat[0] },
+                    { gid, team: home, stats: stat[1] },
+                );
                 stat.forEach((a) => a.fill(0));
             },
         );

@@ -9,10 +9,12 @@ class ChunkedResponse {
         res.write('[');
     }
 
-    write(json) {
-        if (this.count) this.res.write(',');
-        this.res.write(JSON.stringify(json));
-        this.count += 1;
+    write(...objects) {
+        for (let i = 0; i < objects.length; i += 1) {
+            if (this.count) this.res.write(',');
+            this.res.write(JSON.stringify(objects[i]));
+            this.count += 1;
+        }
     }
 
     end() {
