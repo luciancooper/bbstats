@@ -49,6 +49,17 @@ router.use((req, res, next) => {
     });
 });
 
+// error 406
+router.use((err, req, res, next) => {
+    if (err === 406) {
+        res.status(406).json({
+            code: 406,
+            title: 'Not Acceptable',
+            detail: `'${req.get('Accept')}' is not an acceptable content type`,
+        });
+    } else next(err);
+});
+
 // error 500
 router.use((err, req, res, next) => {
     res.status(500).json({

@@ -4,11 +4,26 @@ const teamData = require('../../db/teams'),
     StatIndexer = require('../../sim/StatIndexer');
 
 async function data(req, res, next) {
+    let teams;
     try {
-        const teams = await teamData(req.params).array();
-        return res.status(200).json(teams);
+        teams = await teamData(req.params).array();
     } catch (e) {
         return next(e);
+    }
+    switch (req.accepts(['json', 'csv'])) {
+    // json response
+    case 'json':
+        return res.json(teams);
+    // csv response
+    case 'csv': {
+        const { year } = req.params,
+            head = 'year,team,league\n',
+            csv = teams.map(({ team, league }) => `${year},${team},${league}\n`).join('');
+        return res.set('Content-Type', 'text/csv').send(head + csv);
+    }
+    // error 406
+    default:
+        return next(406);
     }
 }
 
@@ -27,7 +42,21 @@ async function batting(req, res, next) {
             bstatIndexer.apply(stats[tid], ...keys);
         },
     );
-    res.status(200).json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+    switch (req.accepts(['json', 'csv'])) {
+    // json response
+    case 'json':
+        return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+    // csv response
+    case 'csv': {
+        const { year } = req.params,
+            head = `year,team,${bstatIndexer.keys.join(',')}\n`,
+            csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
+        return res.set('Content-Type', 'text/csv').send(head + csv);
+    }
+    // error 406
+    default:
+        return next(406);
+    }
 }
 
 const pstatIndexer = new StatIndexer('W', 'L', 'SV', 'IP', 'BF', 'R', 'ER', 'S', 'D', 'T', 'HR', 'BB', 'HBP', 'IBB', 'K', 'BK', 'WP', 'PO', 'GDP');
@@ -45,7 +74,21 @@ async function pitching(req, res, next) {
             pstatIndexer.apply(stats[tid], ...keys);
         },
     );
-    res.status(200).json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+    switch (req.accepts(['json', 'csv'])) {
+    // json response
+    case 'json':
+        return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+    // csv response
+    case 'csv': {
+        const { year } = req.params,
+            head = `year,team,${pstatIndexer.keys.join(',')}\n`,
+            csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
+        return res.set('Content-Type', 'text/csv').send(head + csv);
+    }
+    // error 406
+    default:
+        return next(406);
+    }
 }
 
 const dstatIndexer = new StatIndexer('UR', 'TUR', 'P', 'A', 'E', 'PB');
@@ -63,7 +106,21 @@ async function defense(req, res, next) {
             dstatIndexer.apply(stats[tid], ...keys);
         },
     );
-    res.status(200).json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+    switch (req.accepts(['json', 'csv'])) {
+    // json response
+    case 'json':
+        return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+    // csv response
+    case 'csv': {
+        const { year } = req.params,
+            head = `year,team,${dstatIndexer.keys.join(',')}\n`,
+            csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
+        return res.set('Content-Type', 'text/csv').send(head + csv);
+    }
+    // error 406
+    default:
+        return next(406);
+    }
 }
 
 module.exports = {

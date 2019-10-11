@@ -4,11 +4,31 @@ const rosterData = require('../../db/rosters'),
     StatIndexer = require('../../sim/StatIndexer');
 
 async function data(req, res, next) {
+    let rosters;
     try {
-        const rosters = await rosterData(req.params).array();
-        return res.status(200).json(rosters.length === 1 ? rosters[0] : rosters);
+        rosters = await rosterData(req.params).array();
     } catch (e) {
         return next(e);
+    }
+    switch (req.accepts(['json', 'csv'])) {
+    // json response
+    case 'json':
+        return res.json(rosters.length === 1 ? rosters[0] : rosters);
+    // csv response
+    case 'csv': {
+        const { year } = req.params,
+            head = 'year,team,pid,p,bh,th\n',
+            csv = rosters.map(({ team, roster }) => roster.map(({
+                pid,
+                p,
+                bh,
+                th,
+            }) => `${year},${team},${pid},${p},${bh},${th}\n`).join('')).join('');
+        return res.set('Content-Type', 'text/csv').send(head + csv);
+    }
+    // error 406
+    default:
+        return next(406);
     }
 }
 
@@ -16,7 +36,6 @@ const bstatIndexer = new StatIndexer('O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB',
 
 async function batting(req, res, next) {
     const sim = new RosterStats();
-    let json;
     if (req.params.team) {
         const { team } = req.params;
         let stats;
@@ -33,10 +52,21 @@ async function batting(req, res, next) {
                 if (tid === team) bstatIndexer.apply(stats[pid], ...keys);
             },
         );
-        json = Object.keys(stats).map((pid) => ({
-            pid,
-            stats: stats[pid],
-        }));
+        switch (req.accepts(['json', 'csv'])) {
+        // json response
+        case 'json':
+            return res.json(Object.entries(stats).map(([pid, stat]) => ({ team, pid, stat })));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,pid,${bstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([pid, stat]) => `${year},${team},${pid},${stat.join(',')}\n`).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
+        }
     } else {
         const stats = {};
         await rosterData(req.params).each(({ team, roster }) => {
@@ -52,20 +82,32 @@ async function batting(req, res, next) {
                 bstatIndexer.apply(stats[tid][pid], ...keys);
             },
         );
-        json = Object.keys(stats).flatMap((team) => Object.keys(stats[team]).map((pid) => ({
-            team,
-            pid,
-            stats: stats[team][pid],
-        })));
+        switch (req.accepts(['json', 'csv'])) {
+        // json response
+        case 'json':
+            return res.json(Object.entries(stats).flatMap(([team, r]) => Object.entries(r).map(([pid, stat]) => ({
+                team,
+                pid,
+                stat,
+            }))));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,pid,${bstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([team, roster]) => Object.entries(roster).map(([pid, stat]) => `${year},${team},${pid},${stat.join(',')}\n`).join('')).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
+        }
     }
-    res.status(200).json(json);
 }
 
 const pstatIndexer = new StatIndexer('W', 'L', 'SV', 'IP', 'BF', 'R', 'ER', 'S', 'D', 'T', 'HR', 'BB', 'HBP', 'IBB', 'K', 'BK', 'WP', 'PO', 'GDP');
 
 async function pitching(req, res, next) {
     const sim = new RosterStats();
-    let json;
     if (req.params.team) {
         const { team } = req.params;
         let stats;
@@ -82,10 +124,21 @@ async function pitching(req, res, next) {
                 if (tid === team) pstatIndexer.apply(stats[pid], ...keys);
             },
         );
-        json = Object.keys(stats).map((pid) => ({
-            pid,
-            stats: stats[pid],
-        }));
+        switch (req.accepts(['json', 'csv'])) {
+        // json response
+        case 'json':
+            return res.json(Object.entries(stats).map(([pid, stat]) => ({ team, pid, stat })));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,pid,${pstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([pid, stat]) => `${year},${team},${pid},${stat.join(',')}\n`).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
+        }
     } else {
         const stats = {};
         await rosterData(req.params).each(({ team, roster }) => {
@@ -101,20 +154,32 @@ async function pitching(req, res, next) {
                 pstatIndexer.apply(stats[tid][pid], ...keys);
             },
         );
-        json = Object.keys(stats).flatMap((team) => Object.keys(stats[team]).map((pid) => ({
-            team,
-            pid,
-            stats: stats[team][pid],
-        })));
+        switch (req.accepts(['json', 'csv'])) {
+        // json response
+        case 'json':
+            return res.json(Object.entries(stats).flatMap(([team, r]) => Object.entries(r).map(([pid, stat]) => ({
+                team,
+                pid,
+                stat,
+            }))));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,pid,${pstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([team, roster]) => Object.entries(roster).map(([pid, stat]) => `${year},${team},${pid},${stat.join(',')}\n`).join('')).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
+        }
     }
-    res.status(200).json(json);
 }
 
 const dstatIndexer = new StatIndexer('P', 'A', 'E', 'PB');
 
 async function defense(req, res, next) {
     const sim = new RosterStats();
-    let json;
     if (req.params.team) {
         const { team } = req.params;
         let stats;
@@ -131,10 +196,21 @@ async function defense(req, res, next) {
                 if (tid === team) dstatIndexer.apply(stats[pid], ...keys);
             },
         );
-        json = Object.keys(stats).map((pid) => ({
-            pid,
-            stats: stats[pid],
-        }));
+        switch (req.accepts(['json', 'csv'])) {
+        // json response
+        case 'json':
+            return res.json(Object.entries(stats).map(([pid, stat]) => ({ team, pid, stat })));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,pid,${dstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([pid, stat]) => `${year},${team},${pid},${stat.join(',')}\n`).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
+        }
     } else {
         const stats = {};
         await rosterData(req.params).each(({ team, roster }) => {
@@ -150,13 +226,26 @@ async function defense(req, res, next) {
                 dstatIndexer.apply(stats[tid][pid], ...keys);
             },
         );
-        json = Object.keys(stats).flatMap((team) => Object.keys(stats[team]).map((pid) => ({
-            team,
-            pid,
-            stats: stats[team][pid],
-        })));
+        switch (req.accepts(['json', 'csv'])) {
+        // json response
+        case 'json':
+            return res.json(Object.entries(stats).flatMap(([team, r]) => Object.entries(r).map(([pid, stat]) => ({
+                team,
+                pid,
+                stat,
+            }))));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,pid,${dstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([team, roster]) => Object.entries(roster).map(([pid, stat]) => `${year},${team},${pid},${stat.join(',')}\n`).join('')).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
+        }
     }
-    res.status(200).json(json);
 }
 
 module.exports = {
