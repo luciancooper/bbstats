@@ -5,7 +5,9 @@
     "node": true
   },
   "rules": {
-    "indent": ["error", 4],
+    "indent": ["error", 4, {
+      "SwitchCase": 1
+    }],
     "eol-last": ["error", "never"],
     "one-var": ["error", "consecutive"],
     "no-console": "off",

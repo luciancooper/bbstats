@@ -8,25 +8,25 @@ async function scores(req, res, next) {
     let chunked,
         gamecb;
     switch (req.accepts(['json', 'csv'])) {
-    // json response
-    case 'json': {
-        chunked = new ChunkedJSON(res).open();
-        gamecb = ({ gid }, { score }) => {
-            chunked.write({ gid, score });
-        };
-        break;
-    }
-    // csv response
-    case 'csv': {
-        chunked = new ChunkedCSV(res).open('gid', 'away', 'home');
-        gamecb = ({ gid }, { score }) => {
-            chunked.write(`${gid},${score[0]},${score[1]}`);
-        };
-        break;
-    }
-    // error 406
-    default:
-        return void next(406);
+        // json response
+        case 'json': {
+            chunked = new ChunkedJSON(res).open();
+            gamecb = ({ gid }, { score }) => {
+                chunked.write({ gid, score });
+            };
+            break;
+        }
+        // csv response
+        case 'csv': {
+            chunked = new ChunkedCSV(res).open('gid', 'away', 'home');
+            gamecb = ({ gid }, { score }) => {
+                chunked.write(`${gid},${score[0]},${score[1]}`);
+            };
+            break;
+        }
+        // error 406
+        default:
+            return void next(406);
     }
     // run sims
     await new GameSim().simScores(
@@ -50,25 +50,25 @@ async function batting(req, res, next) {
             if (tid === team) bstatIndexer.apply(stat, ...keys);
         };
         switch (req.accepts(['json', 'csv'])) {
-        // json response
-        case 'json':
-            chunked = new ChunkedJSON(res).open();
-            gamecb = ({ gid }) => {
-                chunked.write({ gid, team, stat });
-                stat.fill(0);
-            };
-            break;
-        // csv response
-        case 'csv':
-            chunked = new ChunkedCSV(res).open('gid', 'team', ...bstatIndexer.keys);
-            gamecb = ({ gid }) => {
-                chunked.write(`${gid},${team},${stat.join(',')}`);
-                stat.fill(0);
-            };
-            break;
-        // error 406
-        default:
-            return void next(406);
+            // json response
+            case 'json':
+                chunked = new ChunkedJSON(res).open();
+                gamecb = ({ gid }) => {
+                    chunked.write({ gid, team, stat });
+                    stat.fill(0);
+                };
+                break;
+            // csv response
+            case 'csv':
+                chunked = new ChunkedCSV(res).open('gid', 'team', ...bstatIndexer.keys);
+                gamecb = ({ gid }) => {
+                    chunked.write(`${gid},${team},${stat.join(',')}`);
+                    stat.fill(0);
+                };
+                break;
+            // error 406
+            default:
+                return void next(406);
         }
     } else {
         const stat = bstatIndexer.emptySet(2);
@@ -76,31 +76,31 @@ async function batting(req, res, next) {
             bstatIndexer.apply(stat[t], ...keys);
         };
         switch (req.accepts(['json', 'csv'])) {
-        // json response
-        case 'json':
-            chunked = new ChunkedJSON(res).open();
-            gamecb = ({ gid, away, home }) => {
-                chunked.write(
-                    { gid, team: away, stats: stat[0] },
-                    { gid, team: home, stats: stat[1] },
-                );
-                stat.forEach((a) => a.fill(0));
-            };
-            break;
-        // csv response
-        case 'csv':
-            chunked = new ChunkedCSV(res).open('gid', 'team', ...bstatIndexer.keys);
-            gamecb = ({ gid, away, home }) => {
-                chunked.write(
-                    `${gid},${away},${stat[0].join(',')}`,
-                    `${gid},${home},${stat[1].join(',')}`,
-                );
-                stat.forEach((a) => a.fill(0));
-            };
-            break;
-        // error 406
-        default:
-            return void next(406);
+            // json response
+            case 'json':
+                chunked = new ChunkedJSON(res).open();
+                gamecb = ({ gid, away, home }) => {
+                    chunked.write(
+                        { gid, team: away, stats: stat[0] },
+                        { gid, team: home, stats: stat[1] },
+                    );
+                    stat.forEach((a) => a.fill(0));
+                };
+                break;
+            // csv response
+            case 'csv':
+                chunked = new ChunkedCSV(res).open('gid', 'team', ...bstatIndexer.keys);
+                gamecb = ({ gid, away, home }) => {
+                    chunked.write(
+                        `${gid},${away},${stat[0].join(',')}`,
+                        `${gid},${home},${stat[1].join(',')}`,
+                    );
+                    stat.forEach((a) => a.fill(0));
+                };
+                break;
+            // error 406
+            default:
+                return void next(406);
         }
     }
     // run sim
@@ -127,25 +127,25 @@ async function pitching(req, res, next) {
             if (tid === team) pstatIndexer.apply(stat, ...keys);
         };
         switch (req.accepts(['json', 'csv'])) {
-        // json response
-        case 'json':
-            chunked = new ChunkedJSON(res).open();
-            gamecb = ({ gid }) => {
-                chunked.write({ gid, team, stat });
-                stat.fill(0);
-            };
-            break;
-        // csv response
-        case 'csv':
-            chunked = new ChunkedCSV(res).open('gid', 'team', ...pstatIndexer.keys);
-            gamecb = ({ gid }) => {
-                chunked.write(`${gid},${team},${stat.join(',')}`);
-                stat.fill(0);
-            };
-            break;
-        // error 406
-        default:
-            return void next(406);
+            // json response
+            case 'json':
+                chunked = new ChunkedJSON(res).open();
+                gamecb = ({ gid }) => {
+                    chunked.write({ gid, team, stat });
+                    stat.fill(0);
+                };
+                break;
+            // csv response
+            case 'csv':
+                chunked = new ChunkedCSV(res).open('gid', 'team', ...pstatIndexer.keys);
+                gamecb = ({ gid }) => {
+                    chunked.write(`${gid},${team},${stat.join(',')}`);
+                    stat.fill(0);
+                };
+                break;
+            // error 406
+            default:
+                return void next(406);
         }
     } else {
         const stat = pstatIndexer.emptySet(2);
@@ -153,31 +153,31 @@ async function pitching(req, res, next) {
             pstatIndexer.apply(stat[t], ...keys);
         };
         switch (req.accepts(['json', 'csv'])) {
-        // json response
-        case 'json':
-            chunked = new ChunkedJSON(res).open();
-            gamecb = ({ gid, away, home }) => {
-                chunked.write(
-                    { gid, team: away, stats: stat[0] },
-                    { gid, team: home, stats: stat[1] },
-                );
-                stat.forEach((a) => a.fill(0));
-            };
-            break;
-        // csv response
-        case 'csv':
-            chunked = new ChunkedCSV(res).open('gid', 'team', ...pstatIndexer.keys);
-            gamecb = ({ gid, away, home }) => {
-                chunked.write(
-                    `${gid},${away},${stat[0].join(',')}`,
-                    `${gid},${home},${stat[1].join(',')}`,
-                );
-                stat.forEach((a) => a.fill(0));
-            };
-            break;
-        // error 406
-        default:
-            return void next(406);
+            // json response
+            case 'json':
+                chunked = new ChunkedJSON(res).open();
+                gamecb = ({ gid, away, home }) => {
+                    chunked.write(
+                        { gid, team: away, stats: stat[0] },
+                        { gid, team: home, stats: stat[1] },
+                    );
+                    stat.forEach((a) => a.fill(0));
+                };
+                break;
+            // csv response
+            case 'csv':
+                chunked = new ChunkedCSV(res).open('gid', 'team', ...pstatIndexer.keys);
+                gamecb = ({ gid, away, home }) => {
+                    chunked.write(
+                        `${gid},${away},${stat[0].join(',')}`,
+                        `${gid},${home},${stat[1].join(',')}`,
+                    );
+                    stat.forEach((a) => a.fill(0));
+                };
+                break;
+            // error 406
+            default:
+                return void next(406);
         }
     }
     // run sim
@@ -204,25 +204,25 @@ async function defense(req, res, next) {
             if (tid === team) dstatIndexer.apply(stat, ...keys);
         };
         switch (req.accepts(['json', 'csv'])) {
-        // json response
-        case 'json':
-            chunked = new ChunkedJSON(res).open();
-            gamecb = ({ gid }) => {
-                chunked.write({ gid, team, stat });
-                stat.fill(0);
-            };
-            break;
-        // csv response
-        case 'csv':
-            chunked = new ChunkedCSV(res).open('gid', 'team', ...dstatIndexer.keys);
-            gamecb = ({ gid }) => {
-                chunked.write(`${gid},${team},${stat.join(',')}`);
-                stat.fill(0);
-            };
-            break;
-        // error 406
-        default:
-            return void next(406);
+            // json response
+            case 'json':
+                chunked = new ChunkedJSON(res).open();
+                gamecb = ({ gid }) => {
+                    chunked.write({ gid, team, stat });
+                    stat.fill(0);
+                };
+                break;
+            // csv response
+            case 'csv':
+                chunked = new ChunkedCSV(res).open('gid', 'team', ...dstatIndexer.keys);
+                gamecb = ({ gid }) => {
+                    chunked.write(`${gid},${team},${stat.join(',')}`);
+                    stat.fill(0);
+                };
+                break;
+            // error 406
+            default:
+                return void next(406);
         }
     } else {
         const stat = dstatIndexer.emptySet(2);
@@ -230,31 +230,31 @@ async function defense(req, res, next) {
             dstatIndexer.apply(stat[t], ...keys);
         };
         switch (req.accepts(['json', 'csv'])) {
-        // json response
-        case 'json':
-            chunked = new ChunkedJSON(res).open();
-            gamecb = ({ gid, away, home }) => {
-                chunked.write(
-                    { gid, team: away, stats: stat[0] },
-                    { gid, team: home, stats: stat[1] },
-                );
-                stat.forEach((a) => a.fill(0));
-            };
-            break;
-        // csv response
-        case 'csv':
-            chunked = new ChunkedCSV(res).open('gid', 'team', ...dstatIndexer.keys);
-            gamecb = ({ gid, away, home }) => {
-                chunked.write(
-                    `${gid},${away},${stat[0].join(',')}`,
-                    `${gid},${home},${stat[1].join(',')}`,
-                );
-                stat.forEach((a) => a.fill(0));
-            };
-            break;
-        // error 406
-        default:
-            return void next(406);
+            // json response
+            case 'json':
+                chunked = new ChunkedJSON(res).open();
+                gamecb = ({ gid, away, home }) => {
+                    chunked.write(
+                        { gid, team: away, stats: stat[0] },
+                        { gid, team: home, stats: stat[1] },
+                    );
+                    stat.forEach((a) => a.fill(0));
+                };
+                break;
+            // csv response
+            case 'csv':
+                chunked = new ChunkedCSV(res).open('gid', 'team', ...dstatIndexer.keys);
+                gamecb = ({ gid, away, home }) => {
+                    chunked.write(
+                        `${gid},${away},${stat[0].join(',')}`,
+                        `${gid},${home},${stat[1].join(',')}`,
+                    );
+                    stat.forEach((a) => a.fill(0));
+                };
+                break;
+            // error 406
+            default:
+                return void next(406);
         }
     }
     // run sim

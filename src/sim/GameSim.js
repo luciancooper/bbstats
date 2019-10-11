@@ -91,23 +91,23 @@ class GameSim extends EventEmitter {
             line = data.events[i].slice(2).split(',');
             try {
                 switch (data.events[i].charAt(0)) {
-                case 'E':
-                    this.play(line);
-                    break;
-                case 'S':
-                    this.sub(line);
-                    break;
-                case 'O':
-                    this.boot(line);
-                    break;
-                case 'B':
-                    this.badj(line);
-                    break;
-                case 'P':
-                    this.padj(line);
-                    break;
-                default:
-                    break;
+                    case 'E':
+                        this.play(line);
+                        break;
+                    case 'S':
+                        this.sub(line);
+                        break;
+                    case 'O':
+                        this.boot(line);
+                        break;
+                    case 'B':
+                        this.badj(line);
+                        break;
+                    case 'P':
+                        this.padj(line);
+                        break;
+                    default:
+                        break;
                 }
             } catch (e) {
                 throw this.simError(`Error Occured while Processing ${data.events[i]}: ${e}`);

@@ -11,19 +11,19 @@ async function data(req, res, next) {
         return next(e);
     }
     switch (req.accepts(['json', 'csv'])) {
-    // json response
-    case 'json':
-        return res.json(teams);
-    // csv response
-    case 'csv': {
-        const { year } = req.params,
-            head = 'year,team,league\n',
-            csv = teams.map(({ team, league }) => `${year},${team},${league}\n`).join('');
-        return res.set('Content-Type', 'text/csv').send(head + csv);
-    }
-    // error 406
-    default:
-        return next(406);
+        // json response
+        case 'json':
+            return res.json(teams);
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = 'year,team,league\n',
+                csv = teams.map(({ team, league }) => `${year},${team},${league}\n`).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
     }
 }
 
@@ -43,19 +43,19 @@ async function batting(req, res, next) {
         },
     );
     switch (req.accepts(['json', 'csv'])) {
-    // json response
-    case 'json':
-        return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
-    // csv response
-    case 'csv': {
-        const { year } = req.params,
-            head = `year,team,${bstatIndexer.keys.join(',')}\n`,
-            csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
-        return res.set('Content-Type', 'text/csv').send(head + csv);
-    }
-    // error 406
-    default:
-        return next(406);
+        // json response
+        case 'json':
+            return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,${bstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
     }
 }
 
@@ -75,19 +75,19 @@ async function pitching(req, res, next) {
         },
     );
     switch (req.accepts(['json', 'csv'])) {
-    // json response
-    case 'json':
-        return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
-    // csv response
-    case 'csv': {
-        const { year } = req.params,
-            head = `year,team,${pstatIndexer.keys.join(',')}\n`,
-            csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
-        return res.set('Content-Type', 'text/csv').send(head + csv);
-    }
-    // error 406
-    default:
-        return next(406);
+        // json response
+        case 'json':
+            return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,${pstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
     }
 }
 
@@ -107,19 +107,19 @@ async function defense(req, res, next) {
         },
     );
     switch (req.accepts(['json', 'csv'])) {
-    // json response
-    case 'json':
-        return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
-    // csv response
-    case 'csv': {
-        const { year } = req.params,
-            head = `year,team,${dstatIndexer.keys.join(',')}\n`,
-            csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
-        return res.set('Content-Type', 'text/csv').send(head + csv);
-    }
-    // error 406
-    default:
-        return next(406);
+        // json response
+        case 'json':
+            return res.json(Object.keys(stats).map((team) => ({ team, stats: stats[team] })));
+        // csv response
+        case 'csv': {
+            const { year } = req.params,
+                head = `year,team,${dstatIndexer.keys.join(',')}\n`,
+                csv = Object.entries(stats).map(([team, stat]) => `${year},${team},${stat.join(',')}\n`).join('');
+            return res.set('Content-Type', 'text/csv').send(head + csv);
+        }
+        // error 406
+        default:
+            return next(406);
     }
 }
 
