@@ -1,5 +1,4 @@
-const rosterData = require('../../db/rosters'),
-    gameData = require('../../db/games'),
+const { rosterData, gameData } = require('../../db'),
     RosterStats = require('../../sim/RosterStats'),
     StatIndexer = require('../../sim/StatIndexer');
 

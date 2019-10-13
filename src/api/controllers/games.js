@@ -1,4 +1,4 @@
-const gameData = require('../../db/games'),
+const { gameData } = require('../../db'),
     GameSim = require('../../sim/GameSim'),
     GameStats = require('../../sim/GameStats'),
     StatIndexer = require('../../sim/StatIndexer'),
