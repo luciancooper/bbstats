@@ -108,16 +108,16 @@ class RosterStats extends RosterSim {
         }
     }
 
-    scorerun(flag, rpid, ppid, rbpid, rppid) {
-        super.scorerun();
+    scorerun(flag, rpid, ppid) {
+        super.scorerun(flag);
         // Credit baserunner with a run
         this.stat('bstat', this.t, rpid, 'R');
         // Charge current pitcher with a run
-        this.stat('pstat', this.dt, rppid, 'R');
+        this.stat('pstat', this.dt, this.rppid, 'R');
         const [ur, rbi, norbi] = [1, 3, 4].map((i) => Number(flag.charAt(i)));
         if (this.checkRbi(rbi, norbi)) {
             // Credit responsible batter with an RBI
-            this.stat('bstat', this.t, rbpid, 'RBI');
+            this.stat('bstat', this.t, this.rbpid, 'RBI');
         }
         if (ur === 0) {
             // Charge pitcher responsible for runner with an earned run

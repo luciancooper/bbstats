@@ -108,8 +108,8 @@ class GameStats extends GameSim {
         }
     }
 
-    scorerun(flag, ...args) {
-        super.scorerun(flag, ...args);
+    scorerun(flag) {
+        super.scorerun(flag);
         this.stat('bstat', this.t, 'R');
         this.stat('pstat', this.dt, 'R');
         const [ur, tur, rbi, norbi] = [1, 2, 3, 4].map((i) => Number(flag.charAt(i)));

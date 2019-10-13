@@ -90,7 +90,6 @@ class RosterSim extends GameSim {
     }
 
     advance(badv, radv) {
-        const { bpid, rppid, rbpid } = this;
         let advflg = 0;
         for (let i = 0, a; i < radv.length; i += 1) {
             a = radv[i];
@@ -100,7 +99,7 @@ class RosterSim extends GameSim {
                 this.bflg ^= 1 << i;
                 this.bases[i] = null;
             } else if (a.charAt(0) === 'H') {
-                this.scorerun(a.slice(2), ...this.bases[i], rbpid, rppid);
+                this.scorerun(a.slice(2), ...this.bases[i]);
                 this.bflg ^= 1 << i;
                 this.bases[i] = null;
             } else if (i !== Number(a.charAt(0)) - 1) {
@@ -116,9 +115,9 @@ class RosterSim extends GameSim {
             if (badv.charAt(0) === 'X') {
                 this.outinc();
             } else if (badv.charAt(0) === 'H') {
-                this.scorerun(badv.slice(2), bpid, rppid, rbpid, rppid);
+                this.scorerun(badv.slice(2), this.bpid, this.rppid);
             } else {
-                this.bases[Number(badv.charAt(0)) - 1] = [bpid, rppid];
+                this.bases[Number(badv.charAt(0)) - 1] = [this.bpid, this.rppid];
                 this.bflg |= 1 << Number(badv.charAt(0)) - 1;
             }
             this.cycleLineup();
