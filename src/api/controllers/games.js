@@ -1,5 +1,4 @@
-const { gameData } = require('../../db'),
-    GameSim = require('../../sim/GameSim'),
+const GameSim = require('../../sim/GameSim'),
     GameStats = require('../../sim/GameStats'),
     StatIndexer = require('../../sim/StatIndexer'),
     { ChunkedJSON, ChunkedCSV } = require('../chunked');
@@ -28,9 +27,9 @@ async function scores(req, res, next) {
         default:
             return void next(406);
     }
-    // run sims
+    // sim games
     await new GameSim().simScores(
-        gameData(req.params),
+        req.params,
         gamecb,
     );
     chunked.close();
@@ -39,16 +38,17 @@ async function scores(req, res, next) {
 const bstatIndexer = new StatIndexer('O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB', 'HBP', 'K', 'I', 'SH', 'SF', 'GDP', 'R', 'RBI', 'SB', 'CS', 'PO');
 
 async function batting(req, res, next) {
+    const sim = new GameStats();
     let chunked,
-        statcb,
         gamecb;
     if (req.params.team) {
         const stat = bstatIndexer.emptySet(),
             { team } = req.params;
-        // stat callback
-        statcb = ({ tid }, keys) => {
+        // register stat callback
+        sim.addListener('bstat', ({ tid }, keys) => {
             if (tid === team) bstatIndexer.apply(stat, ...keys);
-        };
+        });
+        // determine response type
         switch (req.accepts(['json', 'csv'])) {
             // json response
             case 'json':
@@ -72,9 +72,11 @@ async function batting(req, res, next) {
         }
     } else {
         const stat = bstatIndexer.emptySet(2);
-        statcb = ({ t }, keys) => {
+        // register stat callback
+        sim.addListener('bstat', ({ t }, keys) => {
             bstatIndexer.apply(stat[t], ...keys);
-        };
+        });
+        // determine response type
         switch (req.accepts(['json', 'csv'])) {
             // json response
             case 'json':
@@ -103,11 +105,9 @@ async function batting(req, res, next) {
                 return void next(406);
         }
     }
-    // run sim
-    await new GameStats().simStats(
-        'bstat',
-        gameData(req.params),
-        statcb,
+    // sim games
+    await sim.simGames(
+        req.params,
         gamecb,
     );
     chunked.close();
@@ -116,16 +116,17 @@ async function batting(req, res, next) {
 const pstatIndexer = new StatIndexer('W', 'L', 'SV', 'IP', 'BF', 'R', 'ER', 'S', 'D', 'T', 'HR', 'BB', 'HBP', 'IBB', 'K', 'BK', 'WP', 'PO', 'GDP');
 
 async function pitching(req, res, next) {
+    const sim = new GameStats();
     let chunked,
-        statcb,
         gamecb;
     if (req.params.team) {
         const stat = pstatIndexer.emptySet(),
             { team } = req.params;
-        // stat callback
-        statcb = ({ tid }, keys) => {
+        // register stat callback
+        sim.addListener('pstat', ({ tid }, keys) => {
             if (tid === team) pstatIndexer.apply(stat, ...keys);
-        };
+        });
+        // determine response type
         switch (req.accepts(['json', 'csv'])) {
             // json response
             case 'json':
@@ -149,9 +150,11 @@ async function pitching(req, res, next) {
         }
     } else {
         const stat = pstatIndexer.emptySet(2);
-        statcb = ({ t }, keys) => {
+        // register stat callback
+        sim.addListener('pstat', ({ t }, keys) => {
             pstatIndexer.apply(stat[t], ...keys);
-        };
+        });
+        // determine response type
         switch (req.accepts(['json', 'csv'])) {
             // json response
             case 'json':
@@ -180,11 +183,9 @@ async function pitching(req, res, next) {
                 return void next(406);
         }
     }
-    // run sim
-    await new GameStats().simStats(
-        'pstat',
-        gameData(req.params),
-        statcb,
+    // sim games
+    await sim.simGames(
+        req.params,
         gamecb,
     );
     chunked.close();
@@ -193,16 +194,17 @@ async function pitching(req, res, next) {
 const dstatIndexer = new StatIndexer('UR', 'TUR', 'P', 'A', 'E', 'PB');
 
 async function defense(req, res, next) {
+    const sim = new GameStats();
     let chunked,
-        statcb,
         gamecb;
     if (req.params.team) {
         const stat = dstatIndexer.emptySet(),
             { team } = req.params;
-        // stat callback
-        statcb = ({ tid }, keys) => {
+        // register stat callback
+        sim.addListener('dstat', ({ tid }, keys) => {
             if (tid === team) dstatIndexer.apply(stat, ...keys);
-        };
+        });
+        // determine response type
         switch (req.accepts(['json', 'csv'])) {
             // json response
             case 'json':
@@ -226,9 +228,11 @@ async function defense(req, res, next) {
         }
     } else {
         const stat = dstatIndexer.emptySet(2);
-        statcb = ({ t }, keys) => {
+        // register stat callback
+        sim.addListener('dstat', ({ t }, keys) => {
             dstatIndexer.apply(stat[t], ...keys);
-        };
+        });
+        // determine response type
         switch (req.accepts(['json', 'csv'])) {
             // json response
             case 'json':
@@ -257,11 +261,9 @@ async function defense(req, res, next) {
                 return void next(406);
         }
     }
-    // run sim
-    await new GameStats().simStats(
-        'dstat',
-        gameData(req.params),
-        statcb,
+    // sim games
+    await sim.simGames(
+        req.params,
         gamecb,
     );
     chunked.close();

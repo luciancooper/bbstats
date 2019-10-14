@@ -1,12 +1,6 @@
 const RosterSim = require('./RosterSim');
 
 class RosterStats extends RosterSim {
-    async simStats(type, games, cb) {
-        this.addListener(type, cb);
-        await games.each(this.simGame, this);
-        this.removeListener(type, cb);
-    }
-
     stat(type, t, pid, ...keys) {
         if (!keys.length) return;
         this.emit(type, { gid: this.gid, tid: this.teams[t], pid }, keys);

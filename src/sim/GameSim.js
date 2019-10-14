@@ -1,4 +1,5 @@
-const { EventEmitter } = require('events');
+const { EventEmitter } = require('events'),
+    { gameData } = require('../db');
 
 class GameSim extends EventEmitter {
     constructor() {
@@ -78,10 +79,21 @@ class GameSim extends EventEmitter {
         return new Error(`[${this.gid} - ${this.eid}] ${message}`);
     }
 
-    async simScores(games, cb) {
-        await games.each((game) => {
+    async simGames(ctx, callback) {
+        if (callback) {
+            await gameData(ctx).each((game) => {
+                this.simGame(game);
+                callback(game);
+            }, this);
+        } else {
+            await gameData(ctx).each(this.simGame, this);
+        }
+    }
+
+    async simScores(ctx, callback) {
+        await gameData(ctx).each((game) => {
             this.simGame(game);
-            cb({ gid: this.gid }, { score: this.score.slice() });
+            callback({ gid: this.gid }, { score: this.score.slice() });
         }, this);
     }
 

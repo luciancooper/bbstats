@@ -1,4 +1,4 @@
-const { teamData, gameData } = require('../../db'),
+const { teamData } = require('../../db'),
     GameStats = require('../../sim/GameStats'),
     StatIndexer = require('../../sim/StatIndexer');
 
@@ -26,21 +26,25 @@ async function data(req, res, next) {
     }
 }
 
+function teamMap(params, fn) {
+    return teamData(params).reduce((acc, { team }) => {
+        acc[team] = fn({ team });
+        return acc;
+    }, {});
+}
+
 const bstatIndexer = new StatIndexer('O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB', 'HBP', 'K', 'I', 'SH', 'SF', 'GDP', 'R', 'RBI', 'SB', 'CS', 'PO');
 
 async function batting(req, res, next) {
     const sim = new GameStats(),
-        stats = await teamData(req.params).reduce((acc, { team }) => {
-            acc[team] = bstatIndexer.emptySet();
-            return acc;
-        }, {});
-    await sim.simStats(
-        'bstat',
-        gameData(req.params),
-        ({ tid }, keys) => {
-            bstatIndexer.apply(stats[tid], ...keys);
-        },
-    );
+        stats = await teamMap(req.params, () => bstatIndexer.emptySet());
+    // register stat callback
+    sim.addListener('bstat', ({ tid }, keys) => {
+        bstatIndexer.apply(stats[tid], ...keys);
+    });
+    // sim games
+    await sim.simGames(req.params);
+    // determine response type
     switch (req.accepts(['json', 'csv'])) {
         // json response
         case 'json':
@@ -62,17 +66,14 @@ const pstatIndexer = new StatIndexer('W', 'L', 'SV', 'IP', 'BF', 'R', 'ER', 'S',
 
 async function pitching(req, res, next) {
     const sim = new GameStats(),
-        stats = await teamData(req.params).reduce((acc, { team }) => {
-            acc[team] = pstatIndexer.emptySet();
-            return acc;
-        }, {});
-    await sim.simStats(
-        'pstat',
-        gameData(req.params),
-        ({ tid }, keys) => {
-            pstatIndexer.apply(stats[tid], ...keys);
-        },
-    );
+        stats = await teamMap(req.params, () => pstatIndexer.emptySet());
+    // register stat callback
+    sim.addListener('pstat', ({ tid }, keys) => {
+        pstatIndexer.apply(stats[tid], ...keys);
+    });
+    // sim games
+    await sim.simGames(req.params);
+    // determine response type
     switch (req.accepts(['json', 'csv'])) {
         // json response
         case 'json':
@@ -94,17 +95,14 @@ const dstatIndexer = new StatIndexer('UR', 'TUR', 'P', 'A', 'E', 'PB');
 
 async function defense(req, res, next) {
     const sim = new GameStats(),
-        stats = await teamData(req.params).reduce((acc, { team }) => {
-            acc[team] = dstatIndexer.emptySet();
-            return acc;
-        }, {});
-    await sim.simStats(
-        'dstat',
-        gameData(req.params),
-        ({ tid }, keys) => {
-            dstatIndexer.apply(stats[tid], ...keys);
-        },
-    );
+        stats = await teamMap(req.params, () => dstatIndexer.emptySet());
+    // register stat callback
+    sim.addListener('dstat', ({ tid }, keys) => {
+        dstatIndexer.apply(stats[tid], ...keys);
+    });
+    // sim games
+    await sim.simGames(req.params);
+    // determine response type
     switch (req.accepts(['json', 'csv'])) {
         // json response
         case 'json':

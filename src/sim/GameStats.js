@@ -7,19 +7,6 @@ class GameStats extends GameSim {
         this.nopitcher = nopitcher;
     }
 
-    async simStats(type, games, cb, gamecb) {
-        this.addListener(type, cb);
-        if (gamecb) {
-            await games.each((game) => {
-                this.simGame(game);
-                gamecb(game);
-            }, this);
-        } else {
-            await games.each(this.simGame, this);
-        }
-        this.removeListener(type, cb);
-    }
-
     stat(type, t, ...keys) {
         if (!keys.length) return;
         this.emit(type, { gid: this.gid, t, tid: this.teams[t] }, keys);
