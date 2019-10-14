@@ -1,4 +1,4 @@
-const { rosterData } = require('../../db'),
+const { rosterData, rosterMap } = require('../../db'),
     RosterStats = require('../../sim/RosterStats'),
     StatIndexer = require('../../sim/StatIndexer');
 
@@ -31,23 +31,11 @@ async function data(req, res, next) {
     }
 }
 
-async function playerMap(params, fn) {
-    const map = {};
-    await rosterData(params).each(({ team, roster }) => {
-        map[team] = roster.reduce((acc, player) => {
-            const x = fn(player);
-            if (x) acc[player.pid] = x;
-            return acc;
-        }, {});
-    });
-    return map;
-}
-
 const bstatIndexer = new StatIndexer('O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB', 'HBP', 'K', 'I', 'SH', 'SF', 'GDP', 'R', 'RBI', 'SB', 'CS', 'PO');
 
 async function batting(req, res, next) {
     const sim = new RosterStats();
-    let stats = await playerMap(req.params, () => bstatIndexer.emptySet());
+    let stats = await rosterMap(req.params, () => bstatIndexer.emptySet());
     if (req.params.team) {
         const { team } = req.params;
         stats = stats[team];
@@ -107,7 +95,7 @@ const pstatIndexer = new StatIndexer('W', 'L', 'SV', 'IP', 'BF', 'R', 'ER', 'S',
 
 async function pitching(req, res, next) {
     const sim = new RosterStats();
-    let stats = await playerMap(req.params, ({ p }) => (p ? pstatIndexer.emptySet() : null));
+    let stats = await rosterMap(req.params, ({ p }) => (p ? pstatIndexer.emptySet() : null));
     if (req.params.team) {
         const { team } = req.params;
         stats = stats[team];
@@ -167,7 +155,7 @@ const dstatIndexer = new StatIndexer('P', 'A', 'E', 'PB');
 
 async function defense(req, res, next) {
     const sim = new RosterStats();
-    let stats = await playerMap(req.params, () => dstatIndexer.emptySet());
+    let stats = await rosterMap(req.params, () => dstatIndexer.emptySet());
     if (req.params.team) {
         const { team } = req.params;
         stats = stats[team];

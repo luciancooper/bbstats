@@ -9,4 +9,14 @@ function teamData({ year }) {
     ]));
 }
 
-module.exports = teamData;
+async function teamMap(params, fn) {
+    return teamData(params).reduce((acc, { team }) => {
+        acc[team] = fn({ team });
+        return acc;
+    }, {});
+}
+
+module.exports = {
+    teamData,
+    teamMap,
+};

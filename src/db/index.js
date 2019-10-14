@@ -1,9 +1,9 @@
-const teamData = require('./teams'),
-    gameData = require('./games'),
-    rosterData = require('./rosters');
+const teams = require('./teams'),
+    games = require('./games'),
+    rosters = require('./rosters');
 
 module.exports = {
-    teamData,
-    gameData,
-    rosterData,
+    ...teams,
+    ...games,
+    ...rosters,
 };

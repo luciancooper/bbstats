@@ -52,4 +52,18 @@ function rosterData({ year, team }) {
     ]));
 }
 
-module.exports = rosterData;
+async function rosterMap(params, callback) {
+    return rosterData(params).reduce((accumulator, { team, roster }) => {
+        accumulator[team] = roster.reduce((acc, { pid, ...info }) => {
+            const x = callback({ pid, ...info });
+            if (x) acc[pid] = x;
+            return acc;
+        }, {});
+        return accumulator;
+    }, {});
+}
+
+module.exports = {
+    rosterData,
+    rosterMap,
+};

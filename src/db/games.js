@@ -16,4 +16,6 @@ function gameData({ year, team }) {
     ]));
 }
 
-module.exports = gameData;
+module.exports = {
+    gameData,
+};

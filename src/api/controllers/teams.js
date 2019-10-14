@@ -1,4 +1,4 @@
-const { teamData } = require('../../db'),
+const { teamData, teamMap } = require('../../db'),
     GameStats = require('../../sim/GameStats'),
     StatIndexer = require('../../sim/StatIndexer');
 
@@ -24,13 +24,6 @@ async function data(req, res, next) {
         default:
             return next(406);
     }
-}
-
-function teamMap(params, fn) {
-    return teamData(params).reduce((acc, { team }) => {
-        acc[team] = fn({ team });
-        return acc;
-    }, {});
 }
 
 const bstatIndexer = new StatIndexer('O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB', 'HBP', 'K', 'I', 'SH', 'SF', 'GDP', 'R', 'RBI', 'SB', 'CS', 'PO');
