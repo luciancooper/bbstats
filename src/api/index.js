@@ -32,6 +32,12 @@ router.get('/rosters/pitching/:year/:team?', validate, rosters.pitching);
 router.get('/rosters/defense/:year/:team?', validate, rosters.defense);
 router.get('/rosters/:year/:team?', validate, rosters.data);
 
+// add handed route
+const handed = require('./controllers/handed');
+
+router.get('/handed/batting/:year/:team?', validate, handed.batting);
+router.get('/handed/pitching/:year/:team?', validate, handed.pitching);
+
 // add games route
 const games = require('./controllers/games');
 
