@@ -4,10 +4,7 @@ class ChunkedCSV {
     }
 
     open(...head) {
-        this.res.writeHead(200, {
-            'Content-Type': 'text/csv',
-            'Transfer-Encoding': 'chunked',
-        });
+        this.res.set('Content-Type', 'text/csv');
         if (head.length) {
             this.res.write(`${head.join(',')}\n`);
         }

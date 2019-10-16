@@ -5,10 +5,7 @@ class ChunkedJSON {
 
     open() {
         this.count = 0;
-        this.res.writeHead(200, {
-            'Content-Type': 'application/json',
-            'Transfer-Encoding': 'chunked',
-        });
+        this.res.set('Content-Type', 'application/json');
         this.res.write('[');
         return this;
     }
