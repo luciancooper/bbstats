@@ -16,35 +16,53 @@ router.param('team', param('team', 'Invalid team id')
     .isLength({ min: 3, max: 3 })
     .withMessage('Team id must be 3 characters'));
 
-// add teams route
-const teams = require('./controllers/teams');
+// add team routes
+const {
+    batting: teamBatting,
+    pitching: teamPitching,
+    defense: teamDefense,
+    data: teamData,
+} = require('./controllers/teams');
 
-router.get('/teams/batting/:year', validate, teams.batting);
-router.get('/teams/pitching/:year', validate, teams.pitching);
-router.get('/teams/defense/:year', validate, teams.defense);
-router.get('/teams/:year', validate, teams.data);
+router.get('/teams/batting/:year', validate, teamBatting);
+router.get('/teams/pitching/:year', validate, teamPitching);
+router.get('/teams/defense/:year', validate, teamDefense);
+router.get('/teams/:year', validate, teamData);
 
-// add rosters route
-const rosters = require('./controllers/rosters');
+// add roster routes
+const {
+    batting: rosterBatting,
+    pitching: rosterPitching,
+    defense: rosterDefense,
+    data: rosterData,
+} = require('./controllers/rosters');
 
-router.get('/rosters/batting/:year/:team?', validate, rosters.batting);
-router.get('/rosters/pitching/:year/:team?', validate, rosters.pitching);
-router.get('/rosters/defense/:year/:team?', validate, rosters.defense);
-router.get('/rosters/:year/:team?', validate, rosters.data);
+router.get('/rosters/batting/:year/:team?', validate, rosterBatting);
+router.get('/rosters/pitching/:year/:team?', validate, rosterPitching);
+router.get('/rosters/defense/:year/:team?', validate, rosterDefense);
+router.get('/rosters/:year/:team?', validate, rosterData);
 
-// add handed route
-const handed = require('./controllers/handed');
+// add handed routes
+const {
+    batting: handedBatting,
+    pitching: handedPitching,
+} = require('./controllers/handed');
 
-router.get('/handed/batting/:year/:team?', validate, handed.batting);
-router.get('/handed/pitching/:year/:team?', validate, handed.pitching);
+router.get('/handed/batting/:year/:team?', validate, handedBatting);
+router.get('/handed/pitching/:year/:team?', validate, handedPitching);
 
-// add games route
-const games = require('./controllers/games');
+// add game routes
+const {
+    scores: gameScores,
+    batting: gameBatting,
+    pitching: gamePitching,
+    defense: gameDefense,
+} = require('./controllers/games');
 
-router.get('/games/scores/:year/:team?', validate, games.scores);
-router.get('/games/batting/:year/:team?', validate, games.batting);
-router.get('/games/pitching/:year/:team?', validate, games.pitching);
-router.get('/games/defense/:year/:team?', validate, games.defense);
+router.get('/games/scores/:year/:team?', validate, gameScores);
+router.get('/games/batting/:year/:team?', validate, gameBatting);
+router.get('/games/pitching/:year/:team?', validate, gamePitching);
+router.get('/games/defense/:year/:team?', validate, gameDefense);
 
 // error 404
 router.use((req, res, next) => {
