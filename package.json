@@ -78,6 +78,8 @@
     "express": "^4.17.1",
     "express-validator": "^6.2.0",
     "mongodb": "^3.3.2",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "request": "^2.88.0",
+    "unzipper": "^0.10.5"
   }
 }
