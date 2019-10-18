@@ -64,6 +64,12 @@ router.get('/games/batting/:year/:team?', validate, gameBatting);
 router.get('/games/pitching/:year/:team?', validate, gamePitching);
 router.get('/games/defense/:year/:team?', validate, gameDefense);
 
+const {
+    unzip,
+} = require('../rs');
+
+router.get('/retrosheet/unzip/:year', validate, unzip);
+
 // error 404
 router.use((req, res, next) => {
     res.status(404).json({
