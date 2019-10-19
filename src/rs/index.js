@@ -28,7 +28,9 @@ function unzip(req, res, next) {
                     // event file
                     let gamecount = 0;
                     entry.pipe(games.parser())
+                        .pipe(games.processor())
                         .pipe(Writable({
+                            objectMode: true,
                             write(game, e, done) {
                                 gamecount += 1;
                                 done();

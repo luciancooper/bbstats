@@ -1,4 +1,5 @@
-const { Transform } = require('stream');
+const { Transform } = require('stream'),
+    { parseGame } = require('./lines');
 
 function parser() {
     let cached = '';
@@ -26,6 +27,18 @@ function parser() {
     });
 }
 
+function processor() {
+    return Transform({
+        objectMode: true,
+        transform(chunk, enc, done) {
+            const lines = parseGame(chunk.toString(enc)).filter(([i]) => 'gilesdopbjur'.includes(i));
+            this.push(lines);
+            done();
+        },
+    });
+}
+
 module.exports = {
     parser,
+    processor,
 };
