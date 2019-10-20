@@ -1,5 +1,6 @@
 const { Transform } = require('stream'),
-    { parseGame } = require('./lines');
+    { parseGame } = require('./lines'),
+    { processGame } = require('./process');
 
 function parser() {
     let cached = '';
@@ -32,7 +33,7 @@ function processor() {
         objectMode: true,
         transform(chunk, enc, done) {
             const lines = parseGame(chunk.toString(enc)).filter(([i]) => 'gilesdopbjur'.includes(i));
-            this.push(lines);
+            this.push(processGame(lines));
             done();
         },
     });
