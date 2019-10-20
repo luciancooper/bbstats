@@ -1,4 +1,5 @@
-const { Transform } = require('stream'),
+const { Transform, Writable } = require('stream'),
+    { db } = require('../../db/service'),
     { parseGame } = require('./lines'),
     { processGame } = require('./process');
 
@@ -39,7 +40,27 @@ function processor() {
     });
 }
 
+function writer() {
+    return Writable({
+        objectMode: true,
+        async write(game, enc, done) {
+            await db().collection('games').insertOne(game);
+            done();
+        },
+    });
+}
+
+async function clear(year) {
+    const {
+        deletedCount: deleted,
+    } = await db().collection('games').deleteMany(year ? { year } : {});
+    console.log(`games deleted count: ${deleted}`);
+    return { deleted };
+}
+
 module.exports = {
     parser,
     processor,
+    writer,
+    clear,
 };

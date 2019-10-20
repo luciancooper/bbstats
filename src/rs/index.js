@@ -1,12 +1,13 @@
 const request = require('request'),
     unzipper = require('unzipper'),
-    { Transform, Writable } = require('stream'),
+    { Transform } = require('stream'),
     { ChunkedJSON } = require('../api/chunked'),
     games = require('./games');
 
-function unzip(req, res, next) {
+async function unzip(req, res, next) {
     const { year } = req.params,
         chunked = new ChunkedJSON(res).open();
+    await games.clear(year);
     request(`https://www.retrosheet.org/events/${year}eve.zip`)
         .pipe(unzipper.Parse())
         .pipe(Transform({
@@ -29,13 +30,15 @@ function unzip(req, res, next) {
                     let gamecount = 0;
                     entry.pipe(games.parser())
                         .pipe(games.processor())
-                        .pipe(Writable({
+                        .pipe(Transform({
                             objectMode: true,
-                            write(game, e, done) {
+                            transform(game, e, done) {
                                 gamecount += 1;
+                                this.push(game);
                                 done();
                             },
                         }))
+                        .pipe(games.writer())
                         .on('finish', () => {
                             chunked.write({ ...file, gamecount });
                             console.log(`Finished Pipe for [${path}] (gamecount: ${gamecount})`);
