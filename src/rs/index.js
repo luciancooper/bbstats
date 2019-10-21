@@ -12,6 +12,7 @@ async function unzip(req, res, next) {
     await games.clear(year);
     await rosters.clear(year);
     await teams.clear(year);
+    const processor = rosters.processor();
     request(`https://www.retrosheet.org/events/${year}eve.zip`)
         .pipe(unzipper.Parse())
         .pipe(Transform({
@@ -33,6 +34,7 @@ async function unzip(req, res, next) {
                     // event file
                     let gamecount = 0;
                     entry.pipe(games.parser())
+                        .pipe(processor.eve())
                         .pipe(games.processor())
                         .pipe(Transform({
                             objectMode: true,
@@ -52,6 +54,7 @@ async function unzip(req, res, next) {
                     // rosters file
                     chunked.write(file);
                     entry.pipe(rosters.parser())
+                        .pipe(processor.ros())
                         .pipe(rosters.writer(year))
                         .on('finish', cb);
                 } else if (/^TEAM[0-9]{4}$/.test(path)) {

@@ -1,35 +1,113 @@
 const { Transform, Writable } = require('stream'),
     { db } = require('../db/service');
 
-const handIndex = { R: 0, L: 1, B: 2 };
-
 function parser() {
     let cached = '';
     return new Transform({
-        objectMode: true,
+        encoding: 'utf-8',
         transform(chunk, enc, done) {
-            cached += chunk.toString(enc);
+            cached += chunk.toString('utf-8');
             done();
         },
         flush(callback) {
-            cached.trim().split('\n').forEach((l) => {
-                const [pid, lastname, firstname, bh, th, team, pos] = l.trim().split(',');
-                this.push({
-                    _id: pid.toUpperCase(),
-                    firstname,
-                    lastname,
-                    teams: [{
-                        team,
-                        p: pos === 'P' ? 1 : 0,
-                        bh: handIndex[bh],
-                        th: handIndex[th],
-                    }],
-                });
-            }, this);
+            if (cached) this.push(cached);
             cached = '';
             callback();
         },
     });
+}
+
+function parseLines(text) {
+    return text.split('\n').map((l) => l.trim()).map((l) => {
+        if (l === '') return null;
+        if (l.startsWith('info')) return ['i', l.slice(5)];
+        if (l.startsWith('play') && !l.endsWith(',NP')) return ['e', l.slice(5)];
+        if (l.startsWith('start')) {
+            const line = l.slice(6).split(',');
+            return ['l', `${line[0]},${line.slice(2).join(',')}`];
+        }
+        if (l.startsWith('sub')) {
+            const line = l.slice(4).split(',');
+            return ['s', `${line[0]},${line.slice(2).join(',')}`];
+        }
+        return null;
+    }).filter((l) => l);
+}
+
+const handIndex = { R: 0, L: 1, B: 2 };
+
+function processor() {
+    const pitchers = new Set();
+    return {
+        eve() {
+            return new Transform({
+                encoding: 'utf-8',
+                transform(chunk, enc, done) {
+                    // extract pitchers from play-by-play context
+                    const lines = parseLines(chunk.toString('utf-8')),
+                        team = [null, null],
+                        ppid = [null, null];
+                    let x = 0,
+                        [i, l] = lines[x],
+                        k,
+                        v;
+                    while (i === 'i') {
+                        [k, v] = l.split(',');
+                        if (k === 'visteam') team[0] = v;
+                        else if (k === 'hometeam') team[1] = v;
+                        [i, l] = lines[x += 1];
+                    }
+                    while (i === 'l') {
+                        if (Number(l.slice(13)) === 1) {
+                            ppid[Number(l[9])] = l.slice(0, 8).toUpperCase();
+                        }
+                        [i, l] = lines[x += 1];
+                    }
+                    while (i === 'e' || i === 's') {
+                        l = l.split(',');
+                        if (i === 's') {
+                            if (l[3] === '1') {
+                                ppid[Number(l[1])] = l[0].toUpperCase();
+                            }
+                        } else {
+                            const t = Number(l[1]) ^ 1;
+                            pitchers.add(`${team[t]}-${ppid[t]}`);
+                        }
+                        try {
+                            [i, l] = lines[x += 1];
+                        } catch (e) {
+                            break;
+                        }
+                    }
+                    this.push(chunk);
+                    done();
+                },
+            });
+        },
+        ros() {
+            return new Transform({
+                objectMode: true,
+                transform(chunk, enc, done) {
+                    console.log(`roster file parser (${enc}) pitcher set ${pitchers.size}`);
+                    chunk.toString(enc).trim().split('\n').forEach((l) => {
+                        const [pid, lastname, firstname, bh, th, team, pos] = l.trim().split(',');
+                        this.push({
+                            _id: pid.toUpperCase(),
+                            firstname,
+                            lastname,
+                            teams: [{
+                                team,
+                                p: (pos === 'P' || pitchers.has(`${team}-${pid.toUpperCase()}`)) ? 1 : 0,
+                                bh: handIndex[bh],
+                                th: handIndex[th],
+                            }],
+                        });
+                    }, this);
+                    done();
+                },
+            });
+        },
+    };
 }
 
 function writer(year) {
@@ -65,6 +143,7 @@ async function clear(year) {
 
 module.exports = {
     parser,
+    processor,
     writer,
     clear,
 };
