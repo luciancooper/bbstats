@@ -3,12 +3,14 @@ const request = require('request'),
     { Transform } = require('stream'),
     { ChunkedJSON } = require('../api/chunked'),
     games = require('./games'),
+    rosters = require('./rosters'),
     teams = require('./teams');
 
 async function unzip(req, res, next) {
     const { year } = req.params,
         chunked = new ChunkedJSON(res).open();
     await games.clear(year);
+    await rosters.clear(year);
     await teams.clear(year);
     request(`https://www.retrosheet.org/events/${year}eve.zip`)
         .pipe(unzipper.Parse())
@@ -46,6 +48,12 @@ async function unzip(req, res, next) {
                             console.log(`Finished Pipe for [${path}] (gamecount: ${gamecount})`);
                             cb();
                         });
+                } else if (/\.ROS$/.test(path)) {
+                    // rosters file
+                    chunked.write(file);
+                    entry.pipe(rosters.parser())
+                        .pipe(rosters.writer(year))
+                        .on('finish', cb);
                 } else if (/^TEAM[0-9]{4}$/.test(path)) {
                     // teams file
                     chunked.write(file);
