@@ -4,11 +4,15 @@ const { Transform, Writable } = require('stream'),
 const handIndex = { R: 0, L: 1, B: 2 };
 
 function parser() {
+    let cached = '';
     return new Transform({
         objectMode: true,
         transform(chunk, enc, done) {
-            console.log(`roster file parser (${enc})`);
-            chunk.toString(enc).trim().split('\n').forEach((l) => {
+            cached += chunk.toString(enc);
+            done();
+        },
+        flush(callback) {
+            cached.trim().split('\n').forEach((l) => {
                 const [pid, lastname, firstname, bh, th, team, pos] = l.trim().split(',');
                 this.push({
                     _id: pid.toUpperCase(),
@@ -22,7 +26,8 @@ function parser() {
                     }],
                 });
             }, this);
-            done();
+            cached = '';
+            callback();
         },
     });
 }
