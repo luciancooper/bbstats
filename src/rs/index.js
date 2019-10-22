@@ -77,6 +77,19 @@ async function unzip(req, res, next) {
         });
 }
 
+async function clear(req, res, next) {
+    const { year } = req.params,
+        { deleted: gamesDeleted } = await games.clear(year),
+        { modified: playersModified, deleted: playersDeleted } = await rosters.clear(year),
+        { modified: teamsModified, deleted: teamsDeleted } = await teams.clear(year);
+    res.json({
+        games: { deleted: gamesDeleted },
+        players: { modified: playersModified, deleted: playersDeleted },
+        teams: { modified: teamsModified, deleted: teamsDeleted },
+    });
+}
+
 module.exports = {
     unzip,
+    clear,
 };
