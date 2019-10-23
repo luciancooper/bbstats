@@ -1,6 +1,6 @@
 const request = require('request'),
     unzipper = require('unzipper'),
-    { Transform } = require('stream'),
+    { Transform, Writable } = require('stream'),
     { ChunkedJSON } = require('../api/chunked'),
     games = require('./games'),
     rosters = require('./rosters'),
@@ -18,54 +18,50 @@ async function unzip(req, res, next) {
         .pipe(Transform({
             objectMode: true,
             transform(entry, enc, cb) {
-                const {
-                    path,
-                    type, // 'Directory' or 'File'
-                    vars: { compressedSize, uncompressedSize },
-                } = entry;
-                console.log(`[${type}] ${path} - [${compressedSize} / ${uncompressedSize}]`);
-                const file = {
-                    path,
-                    type,
-                    compressedSize,
-                    uncompressedSize,
-                };
+                const { path } = entry;
+                console.log(`unzipping ${path}`);
                 if (/\.E[VD][NA]$/.test(path)) {
                     // event file
-                    let gamecount = 0;
                     entry.pipe(games.parser())
                         .pipe(processor.eve())
                         .pipe(games.processor())
-                        .pipe(Transform({
+                        .pipe(games.writer())
+                        .pipe(Writable({
                             objectMode: true,
-                            transform(game, e, done) {
-                                gamecount += 1;
-                                this.push(game);
+                            async write(results, e, done) {
+                                chunked.write({ path, ...results });
                                 done();
                             },
                         }))
-                        .pipe(games.writer())
-                        .on('finish', () => {
-                            chunked.write({ ...file, gamecount });
-                            console.log(`Finished Pipe for [${path}] (gamecount: ${gamecount})`);
-                            cb();
-                        });
+                        .on('finish', cb);
                 } else if (/\.ROS$/.test(path)) {
                     // rosters file
-                    chunked.write(file);
                     entry.pipe(rosters.parser())
                         .pipe(processor.ros())
                         .pipe(rosters.writer(year))
+                        .pipe(Writable({
+                            objectMode: true,
+                            async write(results, e, done) {
+                                chunked.write({ path, ...results });
+                                done();
+                            },
+                        }))
                         .on('finish', cb);
                 } else if (/^TEAM[0-9]{4}$/.test(path)) {
                     // teams file
-                    chunked.write(file);
                     entry.pipe(teams.parser())
                         .pipe(teams.writer(year))
+                        .pipe(Writable({
+                            objectMode: true,
+                            async write(results, e, done) {
+                                chunked.write({ path, ...results });
+                                done();
+                            },
+                        }))
                         .on('finish', cb);
                 } else {
                     // other file
-                    chunked.write(file);
+                    chunked.write({ path });
                     entry.autodrain();
                     cb();
                 }

@@ -1,8 +1,8 @@
-const { Transform, Writable } = require('stream'),
+const { Transform } = require('stream'),
     { db } = require('../db/service');
 
 function parser() {
-    return new Transform({
+    return Transform({
         objectMode: true,
         transform(chunk, enc, done) {
             console.log(`team file parser (${enc})`);
@@ -16,18 +16,25 @@ function parser() {
 }
 
 function writer(year) {
-    return new Writable({
+    let [modified, inserted] = [0, 0];
+    return Transform({
         objectMode: true,
-        async write(team, enc, done) {
+        async transform(team, enc, done) {
             const collection = db().collection('teams'),
                 { _id } = team,
-                result = await collection.findOne({ _id });
-            if (result) {
-                await collection.updateOne({ _id }, { $push: { years: year } });
+                count = await collection.countDocuments({ _id });
+            if (count) {
+                const { modifiedCount } = await collection.updateOne({ _id }, { $push: { years: year } });
+                modified += modifiedCount;
             } else {
-                await collection.insertOne({ ...team, years: [year] });
+                const { insertedCount } = await collection.insertOne({ ...team, years: [year] });
+                inserted += insertedCount;
             }
             done();
+        },
+        flush(callback) {
+            this.push({ modified, inserted });
+            callback();
         },
     });
 }

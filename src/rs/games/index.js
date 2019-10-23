@@ -1,4 +1,4 @@
-const { Transform, Writable } = require('stream'),
+const { Transform } = require('stream'),
     { db } = require('../../db/service'),
     { parseGame } = require('./lines'),
     { processGame } = require('./process');
@@ -41,11 +41,17 @@ function processor() {
 }
 
 function writer() {
-    return Writable({
+    let inserted = 0;
+    return Transform({
         objectMode: true,
-        async write(game, enc, done) {
-            await db().collection('games').insertOne(game);
+        async transform(game, enc, done) {
+            const { insertedCount } = await db().collection('games').insertOne(game);
+            inserted += insertedCount;
             done();
+        },
+        flush(callback) {
+            this.push({ inserted });
+            callback();
         },
     });
 }

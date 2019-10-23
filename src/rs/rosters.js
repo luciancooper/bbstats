@@ -1,9 +1,9 @@
-const { Transform, Writable } = require('stream'),
+const { Transform } = require('stream'),
     { db } = require('../db/service');
 
 function parser() {
     let cached = '';
-    return new Transform({
+    return Transform({
         encoding: 'utf-8',
         transform(chunk, enc, done) {
             cached += chunk.toString('utf-8');
@@ -40,7 +40,7 @@ function processor() {
     const pitchers = new Set();
     return {
         eve() {
-            return new Transform({
+            return Transform({
                 encoding: 'utf-8',
                 transform(chunk, enc, done) {
                     // extract pitchers from play-by-play context
@@ -85,7 +85,7 @@ function processor() {
             });
         },
         ros() {
-            return new Transform({
+            return Transform({
                 objectMode: true,
                 transform(chunk, enc, done) {
                     console.log(`roster file parser (${enc}) pitcher set ${pitchers.size}`);
@@ -111,18 +111,25 @@ function processor() {
 }
 
 function writer(year) {
-    return new Writable({
+    let [modified, inserted] = [0, 0];
+    return Transform({
         objectMode: true,
-        async write(player, enc, done) {
+        async transform(player, enc, done) {
             const collection = db().collection('players'),
-                { _id, teams: [teaminfo], ...name } = player,
-                result = await collection.findOne({ _id });
-            if (!result) {
-                await collection.insertOne({ _id, ...name, teams: [{ year, ...teaminfo }] });
+                { _id, teams: [tinfo], ...name } = player,
+                count = await collection.countDocuments({ _id });
+            if (count) {
+                const { modifiedCount } = await collection.updateOne({ _id }, { $push: { teams: { year, ...tinfo } } });
+                modified += modifiedCount;
             } else {
-                await collection.updateOne({ _id }, { $push: { teams: { year, ...teaminfo } } });
+                const { insertedCount } = await collection.insertOne({ _id, ...name, teams: [{ year, ...tinfo }] });
+                inserted += insertedCount;
             }
             done();
+        },
+        flush(callback) {
+            this.push({ modified, inserted });
+            callback();
         },
     });
 }
