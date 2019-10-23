@@ -21,7 +21,6 @@ function parser() {
             done();
         },
         flush(callback) {
-            // console.log('flushing transform');
             if (cached) this.push(cached);
             cached = '';
             callback();
@@ -60,7 +59,6 @@ async function clear(year) {
     const {
         deletedCount: deleted,
     } = await db().collection('games').deleteMany(year ? { year } : {});
-    console.log(`games deleted count: ${deleted}`);
     return { deleted };
 }
 

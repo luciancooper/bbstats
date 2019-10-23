@@ -20,7 +20,7 @@ async function unzip(req, res, next) {
             objectMode: true,
             transform(entry, enc, cb) {
                 const { path } = entry;
-                console.log(`unzipping ${path}`);
+                console.log(`[${year}] unzipping ${path}`);
                 if (/\.E[VD][NA]$/.test(path)) {
                     // event file
                     entry.pipe(games.parser())
@@ -73,7 +73,6 @@ async function unzip(req, res, next) {
             },
         }))
         .on('finish', () => {
-            console.log(`Retrosheet Unzip Complete (${year})`);
             res.json({
                 games: { ...clearGames, ...gameOpps },
                 players: { cleared: clearPlayers, ...playerOpps },

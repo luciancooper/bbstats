@@ -5,7 +5,6 @@ function parser() {
     return Transform({
         objectMode: true,
         transform(chunk, enc, done) {
-            console.log(`team file parser (${enc})`);
             chunk.toString('utf-8').trim().split('\n').forEach((l) => {
                 const [_id, lg, city, name] = l.slice(0, -1).split(',');
                 this.push({ _id, lg, name: `${city} ${name}` });

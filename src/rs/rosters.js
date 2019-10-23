@@ -88,7 +88,6 @@ function processor() {
             return Transform({
                 objectMode: true,
                 transform(chunk, enc, done) {
-                    console.log(`roster file parser (${enc}) pitcher set ${pitchers.size}`);
                     chunk.toString(enc).trim().split('\n').forEach((l) => {
                         const [pid, lastname, firstname, bh, th, team, pos] = l.trim().split(',');
                         this.push({
