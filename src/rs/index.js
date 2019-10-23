@@ -1,18 +1,19 @@
 const request = require('request'),
     unzipper = require('unzipper'),
     { Transform, Writable } = require('stream'),
-    { ChunkedJSON } = require('../api/chunked'),
     games = require('./games'),
     rosters = require('./rosters'),
     teams = require('./teams');
 
 async function unzip(req, res, next) {
     const { year } = req.params,
-        chunked = new ChunkedJSON(res).open();
-    await games.clear(year);
-    await rosters.clear(year);
-    await teams.clear(year);
-    const processor = rosters.processor();
+        clearGames = await games.clear(year),
+        clearPlayers = await rosters.clear(year),
+        clearTeams = await teams.clear(year),
+        playerOpps = { modified: 0, inserted: 0, files: [] },
+        teamOpps = { modified: 0, inserted: 0, files: [] },
+        gameOpps = { inserted: 0, files: [] },
+        processor = rosters.processor();
     request(`https://www.retrosheet.org/events/${year}eve.zip`)
         .pipe(unzipper.Parse())
         .pipe(Transform({
@@ -28,8 +29,9 @@ async function unzip(req, res, next) {
                         .pipe(games.writer())
                         .pipe(Writable({
                             objectMode: true,
-                            async write(results, e, done) {
-                                chunked.write({ path, ...results });
+                            async write({ inserted }, e, done) {
+                                gameOpps.inserted += inserted;
+                                gameOpps.files.push({ path, inserted });
                                 done();
                             },
                         }))
@@ -41,8 +43,10 @@ async function unzip(req, res, next) {
                         .pipe(rosters.writer(year))
                         .pipe(Writable({
                             objectMode: true,
-                            async write(results, e, done) {
-                                chunked.write({ path, ...results });
+                            async write({ modified, inserted }, e, done) {
+                                playerOpps.modified += modified;
+                                playerOpps.inserted += inserted;
+                                playerOpps.files.push({ path, modified, inserted });
                                 done();
                             },
                         }))
@@ -53,15 +57,16 @@ async function unzip(req, res, next) {
                         .pipe(teams.writer(year))
                         .pipe(Writable({
                             objectMode: true,
-                            async write(results, e, done) {
-                                chunked.write({ path, ...results });
+                            async write({ modified, inserted }, e, done) {
+                                teamOpps.modified += modified;
+                                teamOpps.inserted += inserted;
+                                teamOpps.files.push({ path, modified, inserted });
                                 done();
                             },
                         }))
                         .on('finish', cb);
                 } else {
                     // other file
-                    chunked.write({ path });
                     entry.autodrain();
                     cb();
                 }
@@ -69,7 +74,11 @@ async function unzip(req, res, next) {
         }))
         .on('finish', () => {
             console.log(`Retrosheet Unzip Complete (${year})`);
-            chunked.close();
+            res.json({
+                games: { ...clearGames, ...gameOpps },
+                players: { cleared: clearPlayers, ...playerOpps },
+                teams: { cleared: clearTeams, ...teamOpps },
+            });
         });
 }
 
