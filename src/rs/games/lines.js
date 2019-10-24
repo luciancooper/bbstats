@@ -75,7 +75,9 @@ function parseGame(chunk) {
             }
         }
     } catch (e) {
-        // Nothing
+        if ('gildobprju'.includes(_i)) {
+            processed.push([_i, _l]);
+        }
     }
     return processed;
 }

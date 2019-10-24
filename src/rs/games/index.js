@@ -8,16 +8,14 @@ function parser() {
     return Transform({
         encoding: 'utf-8',
         transform(chunk, enc, done) {
-            let text = chunk.toString('utf-8'),
-                i = text.search(/^id,/gm),
-                cache = cached;
-            while (i >= 0) {
-                if (i || cache) this.push(cache + text.slice(0, i));
-                cache = text.slice(i, i + 3);
-                text = text.slice(i + 3);
-                i = text.search(/^id,/gm);
+            let text = cached + chunk.toString('utf-8'),
+                i = text.slice(1).search(/^id,/m) + 1;
+            while (i > 0) {
+                this.push(text.slice(0, i));
+                text = text.slice(i);
+                i = text.slice(1).search(/^id,/m) + 1;
             }
-            cached = cache + text;
+            cached = text;
             done();
         },
         flush(callback) {
@@ -32,7 +30,7 @@ function processor() {
     return Transform({
         objectMode: true,
         transform(chunk, enc, done) {
-            const lines = parseGame(chunk.toString(enc)).filter(([i]) => 'gilesdopbjur'.includes(i));
+            const lines = parseGame(chunk.toString(enc)).filter(([i]) => 'gilesobpd'.includes(i));
             this.push(processGame(lines));
             done();
         },
