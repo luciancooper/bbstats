@@ -232,8 +232,8 @@ function adv_brevt(adv, rnevt) {
             b,
             r;
         if (p >= 0) {
-            e = e.slice(0, p);
             flg = splitParen(e.slice(p)).map((x) => x.replace(/(?<=TH)[123H]/g, ''));
+            e = e.slice(0, p);
         }
         [e, b] = [e.slice(0, -1), e[e.length - 1]];
         if (e === 'SB') {
@@ -248,7 +248,7 @@ function adv_brevt(adv, rnevt) {
     });
 }
 
-function extract_hitloc(m) {
+function extract_hitloc(...m) {
     for (let i = 0, hl; i < m.length; i += 1) {
         hl = /(?:[12][35]?|34?|[45]6?|78?|89?|[69])(?:D[FW]?|M[DS]?|SF?|XDW?|R(?:[DFMS]|XDW?)?|L(?:D[FW]?|[MS]F?|XDW?|F)?|F)?/.exec(m[i]);
         if (!hl) continue;
@@ -259,7 +259,7 @@ function extract_hitloc(m) {
             j1 = j0 + hl[0].length;
         return [union(difference(m, [m[i]]), [m[i].slice(0, j0) + m[i].slice(j1)]), hl[0]];
     }
-    return [m, null];
+    return [new Set(m), null];
 }
 
 function extract_mods(evt, ...m) {
@@ -272,7 +272,7 @@ function extract_mods(evt, ...m) {
     m = difference(m, ['AP', 'C', 'COUB', 'COUF', 'COUR', 'IF', 'IPHR', 'MREV', 'UREV']);
     const err = new Set([...m].filter((x) => /^E\d$/.test(x)));
     m = difference(m, err);
-    [m, hl] = extract_hitloc(m);
+    [m, hl] = extract_hitloc(...m);
     // hit locations in foul territory
     if (hl && hl.endsWith('F')) m.add('FL');
     // bunt foul exception
@@ -307,9 +307,9 @@ function extract_mods(evt, ...m) {
         }
     });
     // handle ground into double/triple plays
-    // assert (bb.length <= 1 && dp.length <= 1), `multiple bb or dp modifiers bb:${bb} dp:${dp}`
-    bb = bb.length ? [...bb][0] : null;
-    dp = dp.length ? [...dp][0] : null;
+    // assert (bb.size <= 1 && dp.size <= 1), `multiple bb or dp modifiers bb:${bb} dp:${dp}`
+    bb = bb.size ? [...bb][0] : null;
+    dp = dp.size ? [...dp][0] : null;
     // check if ground ball flag is missing
     if (bb === null && (/^(?:FC|\d{2}|\d\([1-3]\))/.test(evt) || mod.has('BUNT'))) {
         bb = 'G';
