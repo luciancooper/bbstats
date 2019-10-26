@@ -69,8 +69,7 @@ const {
     clear,
 } = require('../rs');
 
-router.get('/retrosheet/unzip/:year', validate, unzip);
-router.get('/retrosheet/clear/:year?', validate, clear);
+router.route('/retrosheet/:year').all(validate).put(unzip).delete(clear);
 
 // error 404
 router.use((req, res, next) => {
