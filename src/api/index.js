@@ -20,46 +20,54 @@ const bstat = ['O', 'E', 'S', 'D', 'T', 'HR', 'BB', 'IBB', 'HBP', 'K', 'I', 'SH'
     pstat = ['W', 'L', 'SV', 'R', 'ER', 'IP', 'BF', 'S', 'D', 'T', 'HR', 'BB', 'HBP', 'IBB', 'K', 'BK', 'WP', 'PO', 'GDP'],
     dstat = ['UR', 'TUR', 'P', 'A', 'E', 'PB'];
 
-// add team routes
 const {
     season: teamSeason,
+    games: teamGames,
     data: teamData,
 } = require('./controllers/teams');
 
-router.get('/teams/batting/:year', validate, teamSeason('bstat', bstat));
-router.get('/teams/pitching/:year', validate, teamSeason('pstat', pstat));
-router.get('/teams/defense/:year', validate, teamSeason('dstat', dstat));
+// add team data route
 router.get('/teams/:year', validate, teamData);
 
-// add game routes
-const {
-    scores: gameScores,
-    stats: gameStats,
-} = require('./controllers/games');
-
-router.get('/games/scores/:year/:team?', validate, gameScores);
-router.get('/games/batting/:year/:team?', validate, gameStats('bstat', bstat));
-router.get('/games/pitching/:year/:team?', validate, gameStats('pstat', pstat));
-router.get('/games/defense/:year/:team?', validate, gameStats('dstat', dstat));
-
-// add roster routes
 const {
     season: rosterSeason,
+    games: rosterGames,
     data: rosterData,
 } = require('./controllers/rosters');
 
-router.get('/rosters/batting/:year/:team?', validate, rosterSeason('bstat', bstat, false));
-router.get('/rosters/pitching/:year/:team?', validate, rosterSeason('pstat', pstat, true));
-router.get('/rosters/defense/:year/:team?', validate, rosterSeason('dstat', dstat.slice(2), false));
+// add roster data route
 router.get('/rosters/:year/:team?', validate, rosterData);
 
-// add handed routes
+const {
+    scores: gameScores,
+} = require('./controllers/games');
+
+// add game scores route
+router.get('/scores/:year/:team?', validate, gameScores);
+
 const {
     season: handedSeason,
 } = require('./controllers/handed');
 
-router.get('/handed/batting/:year/:team?', validate, handedSeason('bstat', bstat.slice(0, -3), false));
-router.get('/handed/pitching/:year/:team?', validate, handedSeason('pstat', pstat.slice(5), true));
+// add batting stats routes
+router.get('/batting/team/games/:year/:team?', validate, teamGames('bstat', bstat));
+router.get('/batting/team/:year', validate, teamSeason('bstat', bstat));
+router.get('/batting/player/games/:year/:team?', validate, rosterGames('bstat', bstat));
+router.get('/batting/player/:year/:team?', validate, rosterSeason('bstat', bstat, false));
+router.get('/batting/handed/:year/:team?', validate, handedSeason('bstat', bstat.slice(0, -3), false));
+
+// add pitching stats routes
+router.get('/pitching/team/games/:year/:team?', validate, teamGames('pstat', pstat));
+router.get('/pitching/team/:year', validate, teamSeason('pstat', pstat));
+router.get('/pitching/player/games/:year/:team?', validate, rosterGames('pstat', pstat));
+router.get('/pitching/player/:year/:team?', validate, rosterSeason('pstat', pstat, true));
+router.get('/pitching/handed/:year/:team?', validate, handedSeason('pstat', pstat.slice(5), true));
+
+// add defensive stats routes
+router.get('/defense/team/games/:year/:team?', validate, teamGames('dstat', dstat));
+router.get('/defense/team/:year', validate, teamSeason('dstat', dstat));
+router.get('/defense/player/games/:year/:team?', validate, rosterGames('dstat', dstat.slice(2)));
+router.get('/defense/player/:year/:team?', validate, rosterSeason('dstat', dstat.slice(2), false));
 
 // add retrosheet routes
 const {

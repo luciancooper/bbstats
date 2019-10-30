@@ -1,7 +1,8 @@
 /* eslint-disable max-len */
 const { rosterData, rosterMap } = require('../../db'),
     RosterStats = require('../../sim/RosterStats'),
-    StatIndexer = require('../../sim/StatIndexer');
+    StatIndexer = require('../../sim/StatIndexer'),
+    { ChunkedJSON, ChunkedCSV } = require('../chunked');
 
 async function data(req, res, next) {
     let rosters;
@@ -97,7 +98,97 @@ function season(type, statKeys, pitchersOnly = false) {
     };
 }
 
+function games(type, statKeys) {
+    const indexer = new StatIndexer(...statKeys);
+    return async (req, res, next) => {
+        const sim = new RosterStats();
+        let chunked,
+            gamecb;
+        if (req.params.team) {
+            const { team } = req.params;
+            let stats = {};
+            // register stat callback
+            sim.addListener(type, ({ tid, pid }, keys) => {
+                if (tid !== team) return;
+                if (!stats[pid]) stats[pid] = indexer.emptySet();
+                indexer.apply(stats[pid], ...keys);
+            });
+            // determine response type
+            switch (req.accepts(['json', 'csv'])) {
+                // json response
+                case 'json':
+                    chunked = new ChunkedJSON(res).open();
+                    gamecb = ({ gid }) => {
+                        chunked.write(...Object.entries(stats).map(([pid, stat]) => ({
+                            gid,
+                            team,
+                            pid,
+                            stat,
+                        })));
+                        stats = {};
+                    };
+                    break;
+                // csv response
+                case 'csv':
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'player', ...indexer.keys);
+                    gamecb = ({ gid }) => {
+                        chunked.write(...Object.entries(stats).map(([pid, stat]) => `${gid},${team},${pid},${stat.join(',')}`));
+                        stats = {};
+                    };
+                    break;
+                // error 406
+                default:
+                    return void next(406);
+            }
+        } else {
+            let stats = [{}, {}];
+            // register stat callback
+            sim.addListener(type, ({ t, pid }, keys) => {
+                if (!stats[t][pid]) stats[t][pid] = indexer.emptySet();
+                indexer.apply(stats[t][pid], ...keys);
+            });
+            // determine response type
+            switch (req.accepts(['json', 'csv'])) {
+                // json response
+                case 'json':
+                    chunked = new ChunkedJSON(res).open();
+                    gamecb = ({ gid, away, home }) => {
+                        [away, home].forEach((team, i) => {
+                            chunked.write(...Object.entries(stats[i]).map(([pid, stat]) => ({
+                                gid,
+                                team,
+                                pid,
+                                stat,
+                            })));
+                        });
+                        stats = [{}, {}];
+                    };
+                    break;
+                // csv response
+                case 'csv':
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'player', ...indexer.keys);
+                    gamecb = ({ gid, away, home }) => {
+                        [away, home].forEach((team, i) => {
+                            chunked.write(...Object.entries(stats[i]).map(([pid, stat]) => `${gid},${team},${pid},${stat.join(',')}`));
+                        });
+                    };
+                    break;
+                // error 406
+                default:
+                    return void next(406);
+            }
+        }
+        // sim games
+        await sim.simGames(
+            req.params,
+            gamecb,
+        );
+        chunked.close();
+    };
+}
+
 module.exports = {
     data,
     season,
+    games,
 };

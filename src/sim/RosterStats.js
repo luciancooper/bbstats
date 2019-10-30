@@ -3,7 +3,12 @@ const RosterSim = require('./RosterSim');
 class RosterStats extends RosterSim {
     stat(type, t, pid, ...keys) {
         if (!keys.length) return;
-        this.emit(type, { gid: this.gid, tid: this.teams[t], pid }, keys);
+        this.emit(type, {
+            gid: this.gid,
+            t,
+            tid: this.teams[t],
+            pid,
+        }, keys);
     }
 
     event(line) {
