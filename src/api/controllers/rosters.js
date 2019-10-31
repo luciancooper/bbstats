@@ -171,6 +171,7 @@ function games(type, statKeys) {
                         [away, home].forEach((team, i) => {
                             chunked.write(...Object.entries(stats[i]).map(([pid, stat]) => `${gid},${team},${pid},${stat.join(',')}`));
                         });
+                        stats = [{}, {}];
                     };
                     break;
                 // error 406
