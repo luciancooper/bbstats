@@ -116,8 +116,8 @@ function writer(year) {
         async transform(player, enc, done) {
             const collection = db().collection('players'),
                 { _id, teams: [tinfo], ...name } = player,
-                count = await collection.countDocuments({ _id });
-            if (count) {
+                n = await collection.countDocuments({ _id });
+            if (n) {
                 const { modifiedCount } = await collection.updateOne({ _id }, { $push: { teams: { year, ...tinfo } } });
                 modified += modifiedCount;
             } else {
@@ -147,9 +147,14 @@ async function clear(year) {
     return { modified, deleted: 0 };
 }
 
+async function count(year) {
+    return db().collection('players').countDocuments(year != null ? { teams: { $elemMatch: { year } } } : {});
+}
+
 module.exports = {
     parser,
     processor,
     writer,
     clear,
+    count,
 };

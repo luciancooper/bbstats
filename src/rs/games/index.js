@@ -60,9 +60,14 @@ async function clear(year) {
     return { deleted };
 }
 
+async function count(year) {
+    return db().collection('games').count(year != null ? { year } : {});
+}
+
 module.exports = {
     parser,
     processor,
     writer,
     clear,
+    count,
 };

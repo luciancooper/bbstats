@@ -81,9 +81,14 @@ router.get('/defense/player/:year/:team?', validate, rosterSeason('dstat', dstat
 const {
     unzip,
     clear,
+    summary,
 } = require('../rs');
 
-router.route('/retrosheet/:year').all(validate).put(unzip).delete(clear);
+router.route('/retrosheet/:year')
+    .all(validate)
+    .get(summary)
+    .put(unzip)
+    .delete(clear);
 
 // error 404
 router.use((req, res, next) => {

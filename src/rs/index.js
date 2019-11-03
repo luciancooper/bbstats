@@ -93,7 +93,20 @@ async function clear(req, res, next) {
     });
 }
 
+async function summary(req, res, next) {
+    const { year } = req.params;
+    res.json({
+        year,
+        summary: {
+            teams: await teams.count(year),
+            players: await rosters.count(year),
+            games: await games.count(year),
+        },
+    });
+}
+
 module.exports = {
     unzip,
     clear,
+    summary,
 };
