@@ -40,10 +40,14 @@ router.get('/rosters/:year/:team?', validate, rosterData);
 
 const {
     scores: gameScores,
+    info: gameInfo,
 } = require('./controllers/games');
 
 // add game scores route
 router.get('/scores/:year/:team?', validate, gameScores);
+
+// add game info route
+router.get('/gameinfo/:year/:team?', validate, gameInfo);
 
 const {
     season: handedSeason,

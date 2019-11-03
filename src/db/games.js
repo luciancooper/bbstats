@@ -16,6 +16,54 @@ function gameData({ year, team }) {
     ]));
 }
 
+function gameInfo({ year, team }) {
+    return new DataCursor(db().collection('games').aggregate([
+        { $match: team ? { $and: [{ year }, { $or: [{ home: team }, { away: team }] }] } : { year } },
+        {
+            $replaceWith: {
+                date: { $concat: [{ $toString: '$year' }, '-', { $substr: ['$_id', 4, 2] }, '-', { $substr: ['$_id', 6, 2] }] },
+                gn: '$gn',
+                info: {
+                    gid: '$_id',
+                    site: '$site',
+                },
+                games: {
+                    $let: {
+                        vars: {
+                            apitcher: { $substr: [{ $arrayElemAt: ['$lineup', 0] }, 0, 8] },
+                            hpitcher: { $substr: [{ $arrayElemAt: ['$lineup', 1] }, 0, 8] },
+                        },
+                        in: [
+                            {
+                                team: '$home',
+                                opponent: '$away',
+                                startingPitcher: '$$hpitcher',
+                                opponentStartingPitcher: '$$apitcher',
+                                home: true,
+                            },
+                            {
+                                team: '$away',
+                                opponent: '$home',
+                                startingPitcher: '$$apitcher',
+                                opponentStartingPitcher: '$$hpitcher',
+                                home: false,
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+        { $unwind: { path: '$games' } },
+        ...(team ? [{ $match: { 'games.team': team } }] : []),
+        { $sort: { date: 1, gn: 1 } },
+        { $group: { _id: '$games.team', items: { $push: { $mergeObjects: ['$info', '$games'] } } } },
+        { $unwind: { path: '$items', includeArrayIndex: 'index' } },
+        { $replaceWith: { $mergeObjects: ['$items', { gameNumber: { $sum: ['$index', 1] } }] } },
+        { $sort: { team: 1, gameNumber: 1 } },
+    ]));
+}
+
 module.exports = {
     gameData,
+    gameInfo,
 };
