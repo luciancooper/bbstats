@@ -1,4 +1,4 @@
-const { teamData, teamMap } = require('../../db'),
+const { teamData, teamInfo, teamMap } = require('../../db'),
     GameStats = require('../../sim/GameStats'),
     StatIndexer = require('../../sim/StatIndexer'),
     { ChunkedJSON, ChunkedCSV } = require('../chunked');
@@ -25,6 +25,10 @@ async function data(req, res, next) {
         default:
             return next(406);
     }
+}
+
+async function info(req, res, next) {
+    res.json(await teamInfo(req.params));
 }
 
 function season(type, statKeys) {
@@ -138,6 +142,7 @@ function games(type, statKeys) {
 
 module.exports = {
     data,
+    info,
     season,
     games,
 };

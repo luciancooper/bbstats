@@ -9,6 +9,11 @@ function teamData({ year }) {
     ]));
 }
 
+async function teamInfo({ team }) {
+    const { lg, name } = await db().collection('teams').findOne({ _id: team });
+    return { team, lg, name };
+}
+
 async function teamMap(params, fn) {
     return teamData(params).reduce((acc, { team }) => {
         acc[team] = fn({ team });
@@ -18,5 +23,6 @@ async function teamMap(params, fn) {
 
 module.exports = {
     teamData,
+    teamInfo,
     teamMap,
 };

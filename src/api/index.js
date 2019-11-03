@@ -24,10 +24,14 @@ const {
     season: teamSeason,
     games: teamGames,
     data: teamData,
+    info: teamInfo,
 } = require('./controllers/teams');
 
 // add team data route
 router.get('/teams/:year', validate, teamData);
+
+// add team info route
+router.get('/teaminfo/:team', validate, teamInfo);
 
 const {
     season: rosterSeason,
