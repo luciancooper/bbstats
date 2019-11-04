@@ -130,7 +130,7 @@ function games(type, statKeys) {
                     break;
                 // csv response
                 case 'csv':
-                    chunked = new ChunkedCSV(res).open('gid', 'team', 'player', ...indexer.keys);
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'pid', ...indexer.keys);
                     gamecb = ({ gid }) => {
                         chunked.write(...Object.entries(stats).map(([pid, stat]) => `${gid},${team},${pid},${stat.join(',')}`));
                         stats = {};
@@ -166,7 +166,7 @@ function games(type, statKeys) {
                     break;
                 // csv response
                 case 'csv':
-                    chunked = new ChunkedCSV(res).open('gid', 'team', 'player', ...indexer.keys);
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'pid', ...indexer.keys);
                     gamecb = ({ gid, away, home }) => {
                         [away, home].forEach((team, i) => {
                             chunked.write(...Object.entries(stats[i]).map(([pid, stat]) => `${gid},${team},${pid},${stat.join(',')}`));
