@@ -575,6 +575,12 @@ function handCode(h) {
     }
 }
 
+function fmtStartTime(startTime) {
+    const [h, m, p] = startTime.match(/^(\d+):(\d+)([AP]M)$/).slice(1),
+        hour = Number(h) + (p === 'PM' ? 12 : 0);
+    return `${hour < 10 ? '0' : ''}${hour}:${m}`;
+}
+
 function processGame(lines) {
     let j = 0,
         [i, l] = lines[j],
@@ -600,6 +606,8 @@ function processGame(lines) {
             wp,
             lp,
             save,
+            starttime,
+            daynight,
         } = info,
         dh = info.usedh === 'true' ? 1 : 0,
         htbf = info.htbf === 'true' ? 1 : 0,
@@ -667,6 +675,8 @@ function processGame(lines) {
         home,
         away,
         site,
+        ...(/^\d+:\d+[AP]M$/.test(starttime) ? { startTime: fmtStartTime(starttime) } : {}),
+        ...((daynight === 'day' || daynight === 'night') ? { daynight } : {}),
         dh,
         htbf,
         lineup: [
