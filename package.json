@@ -4,6 +4,7 @@
   "description": "Baseball stats restful api",
   "main": "src/server.js",
   "scripts": {
+    "start": "node src/server.js",
     "dev": "nodemon --watch src --watch .env src/server.js",
     "lint": "eslint --ignore-path .gitignore -f pretty src",
     "lint:fix": "eslint --ignore-path .gitignore -f pretty src --fix",
