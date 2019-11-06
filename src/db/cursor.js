@@ -7,7 +7,7 @@ class DataCursor {
         try {
             return await this.cursor.toArray();
         } catch (e) {
-            return null;
+            return [];
         }
     }
 
