@@ -21,12 +21,14 @@ function rosterData({ year, team }) {
         { $unwind: { path: '$teams' } },
         // restructure items
         {
-            $replaceWith: {
-                team: '$teams.team',
-                pid: '$_id',
-                p: '$teams.p',
-                bh: '$teams.bh',
-                th: '$teams.th',
+            $replaceRoot: {
+                newRoot: {
+                    team: '$teams.team',
+                    pid: '$_id',
+                    p: '$teams.p',
+                    bh: '$teams.bh',
+                    th: '$teams.th',
+                },
             },
         },
         // sort by team then player
@@ -46,7 +48,7 @@ function rosterData({ year, team }) {
             },
         },
         // rename _id to team
-        { $replaceWith: { team: '$_id', roster: '$roster' } },
+        { $replaceRoot: { newRoot: { team: '$_id', roster: '$roster' } } },
         // sort by team
         { $sort: { team: 1 } },
     ]));

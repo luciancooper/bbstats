@@ -4,7 +4,7 @@ const { db } = require('./service'),
 function teamData({ year }) {
     return new DataCursor(db().collection('teams').aggregate([
         { $match: { years: year } },
-        { $replaceWith: { team: '$_id', league: '$lg' } },
+        { $replaceRoot: { newRoot: { team: '$_id', league: '$lg' } } },
         { $sort: { team: 1 } },
     ]));
 }
