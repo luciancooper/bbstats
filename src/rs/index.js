@@ -6,6 +6,8 @@ const request = require('request'),
     teams = require('./teams');
 
 async function unzip(req, res, next) {
+    // remove timeout
+    req.setTimeout(0);
     const { year } = req.params,
         clearGames = await games.clear(year),
         clearPlayers = await rosters.clear(year),
