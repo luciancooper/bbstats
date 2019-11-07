@@ -11,8 +11,8 @@ function gameData({ year, team }) {
     return new DataCursor(db().collection('games').aggregate([
         { $match: match },
         { $sort: { month: 1, day: 1, gn: 1 } },
-        { $addFields: { gid: '$_id' } },
-        { $unset: ['_id'] },
+        { $replaceRoot: { newRoot: { $mergeObjects: [{ gid: '$_id' }, '$$ROOT'] } } },
+        { $project: { _id: 0 } },
     ]));
 }
 
