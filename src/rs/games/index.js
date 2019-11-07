@@ -61,7 +61,7 @@ async function clear(year) {
 }
 
 async function count(year) {
-    return db().collection('games').count(year != null ? { year } : {});
+    return db().collection('games').countDocuments(year != null ? { year } : {});
 }
 
 module.exports = {
