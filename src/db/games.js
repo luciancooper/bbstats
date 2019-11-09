@@ -22,8 +22,6 @@ function gameInfo({ year, team }) {
         {
             $replaceRoot: {
                 newRoot: {
-                    date: { $concat: [{ $toString: '$year' }, '-', { $substr: ['$_id', 4, 2] }, '-', { $substr: ['$_id', 6, 2] }] },
-                    gn: '$gn',
                     info: {
                         gid: '$_id',
                         site: '$site',
@@ -41,6 +39,7 @@ function gameInfo({ year, team }) {
                                     startingPitcher: '$$hpitcher',
                                     opponentStartingPitcher: '$$apitcher',
                                     home: true,
+                                    gameNumber: '$homeGameNumber',
                                 },
                                 {
                                     team: '$away',
@@ -48,6 +47,7 @@ function gameInfo({ year, team }) {
                                     startingPitcher: '$$apitcher',
                                     opponentStartingPitcher: '$$hpitcher',
                                     home: false,
+                                    gameNumber: '$awayGameNumber',
                                 },
                             ],
                         },
@@ -57,10 +57,7 @@ function gameInfo({ year, team }) {
         },
         { $unwind: { path: '$games' } },
         ...(team ? [{ $match: { 'games.team': team } }] : []),
-        { $sort: { date: 1, gn: 1 } },
-        { $group: { _id: '$games.team', items: { $push: { $mergeObjects: ['$info', '$games'] } } } },
-        { $unwind: { path: '$items', includeArrayIndex: 'index' } },
-        { $replaceRoot: { newRoot: { $mergeObjects: ['$items', { gameNumber: { $sum: ['$index', 1] } }] } } },
+        { $replaceRoot: { newRoot: { $mergeObjects: ['$info', '$games'] } } },
         { $sort: { team: 1, gameNumber: 1 } },
     ]));
 }
