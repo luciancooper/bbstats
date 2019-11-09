@@ -674,6 +674,8 @@ function processGame(lines) {
         gn,
         home,
         away,
+        homeGameNumber: 0,
+        awayGameNumber: 0,
         site,
         ...(/^\d+:\d+[AP]M$/.test(starttime) ? { startTime: fmtStartTime(starttime) } : {}),
         ...((daynight === 'day' || daynight === 'night') ? { daynight } : {}),
