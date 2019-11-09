@@ -61,7 +61,18 @@ async function clear(year) {
 }
 
 async function count(year) {
-    return db().collection('games').countDocuments(year != null ? { year } : {});
+    if (year) {
+        // count game docs for a given year
+        return db().collection('games').countDocuments({ year });
+    }
+    // count all game docs in collection grouped by year
+    return (await db().collection('games').aggregate([
+        { $group: { _id: '$year', games: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+        { $replaceRoot: { newRoot: { data: [{ $toString: '$_id' }, '$games'] } } },
+        { $group: { _id: null, years: { $push: '$data' } } },
+        { $replaceRoot: { newRoot: { $arrayToObject: '$years' } } },
+    ]).next() || {});
 }
 
 module.exports = {

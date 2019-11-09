@@ -84,6 +84,10 @@ const {
     summary,
 } = require('../rs');
 
+router.route('/retrosheet')
+    .get(summary)
+    .delete(clear);
+
 router.route('/retrosheet/:year')
     .all(validate)
     .get(summary)

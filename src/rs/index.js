@@ -131,15 +131,33 @@ async function clear(req, res, next) {
 }
 
 async function summary(req, res, next) {
-    const { year } = req.params;
-    res.json({
-        year,
-        summary: {
-            teams: await teams.count(year),
-            players: await rosters.count(year),
-            games: await games.count(year),
-        },
-    });
+    const { year } = req.params,
+        tcount = await teams.count(year),
+        pcount = await rosters.count(year),
+        gcount = await games.count(year);
+    if (year) {
+        res.json({
+            year,
+            summary: {
+                teams: tcount,
+                players: pcount,
+                games: gcount,
+            },
+        });
+    } else {
+        res.json([...new Set([
+            ...Object.keys(tcount),
+            ...Object.keys(pcount),
+            ...Object.keys(gcount),
+        ])].map((y) => ({
+            year: Number(y),
+            summary: {
+                teams: tcount[y] || 0,
+                players: pcount[y] || 0,
+                games: gcount[y] || 0,
+            },
+        })));
+    }
 }
 
 module.exports = {
