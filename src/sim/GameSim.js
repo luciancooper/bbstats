@@ -93,7 +93,10 @@ class GameSim extends EventEmitter {
     async simScores(ctx, callback) {
         await gameData(ctx).each((game) => {
             this.simGame(game);
-            callback({ gid: this.gid }, { score: this.score.slice() });
+            callback({ gid: this.gid }, {
+                score: this.score.slice(),
+                lob: this.lob.slice(),
+            });
         }, this);
     }
 

@@ -9,6 +9,20 @@ function teamData({ year }) {
     ]));
 }
 
+async function teamList({ year }) {
+    try {
+        const { teams } = await db().collection('teams').aggregate([
+            { $match: { years: year } },
+            { $sort: { _id: 1 } },
+            { $group: { _id: null, teams: { $push: '$_id' } } },
+            { $project: { _id: 0 } },
+        ]).next();
+        return teams;
+    } catch (error) {
+        return [];
+    }
+}
+
 async function teamInfo({ team }) {
     const { lg, name } = await db().collection('teams').findOne({ _id: team });
     return { team, lg, name };
@@ -23,6 +37,7 @@ async function teamMap(params, fn) {
 
 module.exports = {
     teamData,
+    teamList,
     teamInfo,
     teamMap,
 };
