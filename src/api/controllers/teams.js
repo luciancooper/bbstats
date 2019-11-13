@@ -107,21 +107,43 @@ function games(type, statKeys) {
                 // json response
                 case 'json':
                     chunked = new ChunkedJSON(res).open();
-                    gamecb = ({ gid, away, home }) => {
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
                         chunked.write(
-                            { gid, team: away, stats: stat[0] },
-                            { gid, team: home, stats: stat[1] },
+                            {
+                                gid,
+                                team: away,
+                                gameNumber: awayGameNumber,
+                                stats: stat[0],
+                            },
+                            {
+                                gid,
+                                team: home,
+                                gameNumber: homeGameNumber,
+                                stats: stat[1],
+                            },
                         );
                         stat.forEach((a) => a.fill(0));
                     };
                     break;
                 // csv response
                 case 'csv':
-                    chunked = new ChunkedCSV(res).open('gid', 'team', ...indexer.keys);
-                    gamecb = ({ gid, away, home }) => {
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', ...indexer.keys);
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
                         chunked.write(
-                            `${gid},${away},${stat[0].join(',')}`,
-                            `${gid},${home},${stat[1].join(',')}`,
+                            `${gid},${away},${awayGameNumber},${stat[0].join(',')}`,
+                            `${gid},${home},${homeGameNumber},${stat[1].join(',')}`,
                         );
                         stat.forEach((a) => a.fill(0));
                     };

@@ -12,12 +12,14 @@ async function scores(req, res, next) {
             // json response
             case 'json': {
                 chunked = new ChunkedJSON(res).open();
-                gamecb = ({ gid }, { score, lob }) => {
+                gamecb = ({ gid, awayGameNumber, homeGameNumber }, { score, lob }) => {
                     const teams = [gid.slice(11, 14), gid.slice(8, 11)],
-                        t = teams.indexOf(team);
+                        t = teams.indexOf(team),
+                        gameNumber = [awayGameNumber, homeGameNumber][t];
                     chunked.write({
                         gid,
                         team,
+                        gameNumber,
                         opp: teams[t ^ 1],
                         home: t,
                         score: score[t],
@@ -33,11 +35,12 @@ async function scores(req, res, next) {
             }
             // csv response
             case 'csv': {
-                chunked = new ChunkedCSV(res).open('gid', 'team', 'opp', 'home', 'score', 'opp_score', 'lob', 'wins', 'losses');
-                gamecb = ({ gid }, { score, lob }) => {
+                chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', 'opp', 'home', 'score', 'opp_score', 'lob', 'wins', 'losses');
+                gamecb = ({ gid, awayGameNumber, homeGameNumber }, { score, lob }) => {
                     const teams = [gid.slice(11, 14), gid.slice(8, 11)],
-                        t = teams.indexOf(team);
-                    chunked.write([gid, team, teams[t ^ 1], t, score[t], score[t ^ 1], lob[t], ...standings].join(','));
+                        t = teams.indexOf(team),
+                        gameNumber = [awayGameNumber, homeGameNumber][t];
+                    chunked.write([gid, team, gameNumber, teams[t ^ 1], t, score[t], score[t ^ 1], lob[t], ...standings].join(','));
                     // update team standings
                     standings[score[t] > score[t ^ 1] ? 0 : 1] += 1;
                 };
@@ -56,7 +59,8 @@ async function scores(req, res, next) {
             // json response
             case 'json': {
                 chunked = new ChunkedJSON(res).open();
-                gamecb = ({ gid }, { score, lob }) => {
+                gamecb = ({ gid, awayGameNumber, homeGameNumber }, { score, lob }) => {
+                    const gameNumber = [awayGameNumber, homeGameNumber];
                     chunked.write(...[gid.slice(11, 14), gid.slice(8, 11)].map((team, t, teams) => {
                         const [wins, losses] = standings[team];
                         // update standings for team
@@ -64,6 +68,7 @@ async function scores(req, res, next) {
                         return ({
                             gid,
                             team,
+                            gameNumber: gameNumber[t],
                             opp: teams[t ^ 1],
                             home: t,
                             score: score[t],
@@ -78,13 +83,14 @@ async function scores(req, res, next) {
             }
             // csv response
             case 'csv': {
-                chunked = new ChunkedCSV(res).open('gid', 'team', 'opp', 'home', 'score', 'opp_score', 'lob', 'wins', 'losses');
-                gamecb = ({ gid }, { score, lob }) => {
+                chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', 'opp', 'home', 'score', 'opp_score', 'lob', 'wins', 'losses');
+                gamecb = ({ gid, awayGameNumber, homeGameNumber }, { score, lob }) => {
+                    const gameNumber = [awayGameNumber, homeGameNumber];
                     chunked.write(...[gid.slice(11, 14), gid.slice(8, 11)].map((team, t, teams) => {
                         const [wins, losses] = standings[team];
                         // update standings for team
                         standings[team][score[t] > score[t ^ 1] ? 0 : 1] += 1;
-                        return [gid, team, teams[t ^ 1], t, score[t], score[t ^ 1], lob[t], wins, losses].join(',');
+                        return [gid, team, gameNumber[t], teams[t ^ 1], t, score[t], score[t ^ 1], lob[t], wins, losses].join(',');
                     }));
                 };
                 break;
