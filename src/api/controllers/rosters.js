@@ -118,10 +118,19 @@ function games(type, statKeys) {
                 // json response
                 case 'json':
                     chunked = new ChunkedJSON(res).open();
-                    gamecb = ({ gid }) => {
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
+                        const t = [away, home].indexOf(team),
+                            gameNumber = [awayGameNumber, homeGameNumber][t];
                         chunked.write(...Object.entries(stats).map(([pid, stat]) => ({
                             gid,
                             team,
+                            gameNumber,
                             pid,
                             stat,
                         })));
@@ -130,9 +139,17 @@ function games(type, statKeys) {
                     break;
                 // csv response
                 case 'csv':
-                    chunked = new ChunkedCSV(res).open('gid', 'team', 'pid', ...indexer.keys);
-                    gamecb = ({ gid }) => {
-                        chunked.write(...Object.entries(stats).map(([pid, stat]) => `${gid},${team},${pid},${stat.join(',')}`));
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', 'pid', ...indexer.keys);
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
+                        const t = [away, home].indexOf(team),
+                            gameNumber = [awayGameNumber, homeGameNumber][t];
+                        chunked.write(...Object.entries(stats).map(([pid, stat]) => `${gid},${team},${gameNumber},${pid},${stat.join(',')}`));
                         stats = {};
                     };
                     break;
@@ -152,11 +169,19 @@ function games(type, statKeys) {
                 // json response
                 case 'json':
                     chunked = new ChunkedJSON(res).open();
-                    gamecb = ({ gid, away, home }) => {
-                        [away, home].forEach((team, i) => {
-                            chunked.write(...Object.entries(stats[i]).map(([pid, stat]) => ({
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
+                        [away, home].forEach((team, t) => {
+                            const gameNumber = [awayGameNumber, homeGameNumber][t];
+                            chunked.write(...Object.entries(stats[t]).map(([pid, stat]) => ({
                                 gid,
                                 team,
+                                gameNumber,
                                 pid,
                                 stat,
                             })));
@@ -166,10 +191,17 @@ function games(type, statKeys) {
                     break;
                 // csv response
                 case 'csv':
-                    chunked = new ChunkedCSV(res).open('gid', 'team', 'pid', ...indexer.keys);
-                    gamecb = ({ gid, away, home }) => {
-                        [away, home].forEach((team, i) => {
-                            chunked.write(...Object.entries(stats[i]).map(([pid, stat]) => `${gid},${team},${pid},${stat.join(',')}`));
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', 'pid', ...indexer.keys);
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
+                        [away, home].forEach((team, t) => {
+                            const gameNumber = [awayGameNumber, homeGameNumber][t];
+                            chunked.write(...Object.entries(stats[t]).map(([pid, stat]) => `${gid},${team},${gameNumber},${pid},${stat.join(',')}`));
                         });
                         stats = [{}, {}];
                     };

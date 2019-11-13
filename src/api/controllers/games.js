@@ -121,7 +121,7 @@ async function info(req, res, next) {
             return res.json(docs);
         // csv response
         case 'csv': {
-            const head = 'gid,team,gn,opp,home,site,pitcher,opp_pitcher\n',
+            const head = 'gid,team,gameNumber,opp,home,site,pitcher,opp_pitcher\n',
                 csv = docs.map(({
                     gid,
                     team,
@@ -153,7 +153,7 @@ async function lineups(req, res, next) {
             break;
         // csv response
         case 'csv': {
-            chunked = new ChunkedCSV(res).open('gid', 'team', 'gn', 'pitcher', ...[1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((i) => [`pid${i}`, `pos${i}`]));
+            chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', 'pitcher', ...[1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((i) => [`pid${i}`, `pos${i}`]));
             await docs.each(({
                 gid,
                 team,

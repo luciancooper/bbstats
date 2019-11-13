@@ -79,16 +79,37 @@ function games(type, statKeys) {
                 // json response
                 case 'json':
                     chunked = new ChunkedJSON(res).open();
-                    gamecb = ({ gid }) => {
-                        chunked.write({ gid, team, stat });
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
+                        const t = [away, home].indexOf(team),
+                            gameNumber = [awayGameNumber, homeGameNumber][t];
+                        chunked.write({
+                            gid,
+                            team,
+                            gameNumber,
+                            stat,
+                        });
                         stat.fill(0);
                     };
                     break;
                 // csv response
                 case 'csv':
-                    chunked = new ChunkedCSV(res).open('gid', 'team', ...indexer.keys);
-                    gamecb = ({ gid }) => {
-                        chunked.write(`${gid},${team},${stat.join(',')}`);
+                    chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', ...indexer.keys);
+                    gamecb = ({
+                        gid,
+                        away,
+                        home,
+                        awayGameNumber,
+                        homeGameNumber,
+                    }) => {
+                        const t = [away, home].indexOf(team),
+                            gameNumber = [awayGameNumber, homeGameNumber][t];
+                        chunked.write(`${gid},${team},${gameNumber},${stat.join(',')}`);
                         stat.fill(0);
                     };
                     break;
