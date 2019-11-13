@@ -2,14 +2,8 @@ const { db } = require('./service'),
     DataCursor = require('./cursor');
 
 function gameData({ year, team }) {
-    let match;
-    if (team) {
-        match = { $and: [{ year }, { $or: [{ home: team }, { away: team }] }] };
-    } else {
-        match = { year };
-    }
     return new DataCursor(db().collection('games').aggregate([
-        { $match: match },
+        { $match: team ? { $and: [{ year }, { $or: [{ home: team }, { away: team }] }] } : { year } },
         { $sort: { month: 1, day: 1, gn: 1 } },
         { $replaceRoot: { newRoot: { $mergeObjects: [{ gid: '$_id' }, '$$ROOT'] } } },
         { $project: { _id: 0 } },
@@ -62,7 +56,66 @@ function gameInfo({ year, team }) {
     ]));
 }
 
+function gameLineups({ year, team }) {
+    return new DataCursor(db().collection('games').aggregate([
+        { $match: team ? { $and: [{ year }, { $or: [{ home: team }, { away: team }] }] } : { year } },
+        {
+            $replaceRoot: {
+                newRoot: {
+                    gid: '$_id',
+                    teams: {
+                        $let: {
+                            vars: {
+                                alineup: { $arrayElemAt: ['$lineup', 0] },
+                                hlineup: { $arrayElemAt: ['$lineup', 1] },
+                            },
+                            in: [
+                                {
+                                    team: '$away',
+                                    gameNumber: '$awayGameNumber',
+                                    pitcher: { $substr: ['$$alineup', 0, 8] },
+                                    lineup: { $slice: [{ $split: ['$$alineup', ','] }, 1, 9] },
+                                },
+                                {
+                                    team: '$home',
+                                    gameNumber: '$homeGameNumber',
+                                    pitcher: { $substr: ['$$hlineup', 0, 8] },
+                                    lineup: { $slice: [{ $split: ['$$hlineup', ','] }, 1, 9] },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+        { $unwind: { path: '$teams' } },
+        ...(team ? [{ $match: { 'teams.team': team } }] : []),
+        {
+            $replaceRoot: {
+                newRoot: {
+                    gid: '$gid',
+                    team: '$teams.team',
+                    pitcher: '$teams.pitcher',
+                    gameNumber: '$teams.gameNumber',
+                    lineup: {
+                        $map: {
+                            input: '$teams.lineup',
+                            as: 'player',
+                            in: {
+                                pid: { $substr: ['$$player', 0, 8] },
+                                pos: { $sum: [{ $toInt: { $substr: ['$$player', 9, 1] } }, 1] },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        { $sort: { team: 1, gameNumber: 1 } },
+    ]));
+}
+
 module.exports = {
     gameData,
     gameInfo,
+    gameLineups,
 };

@@ -1,5 +1,5 @@
 const GameSim = require('../../sim/GameSim'),
-    { gameInfo, teamList } = require('../../db'),
+    { gameInfo, gameLineups, teamList } = require('../../db'),
     { ChunkedJSON, ChunkedCSV } = require('../chunked');
 
 async function scores(req, res, next) {
@@ -140,7 +140,41 @@ async function info(req, res, next) {
     }
 }
 
+async function lineups(req, res, next) {
+    const docs = gameLineups(req.params);
+    let chunked;
+    switch (req.accepts(['json', 'csv'])) {
+        // json response
+        case 'json':
+            chunked = new ChunkedJSON(res).open();
+            await docs.each((data) => {
+                chunked.write(data);
+            });
+            break;
+        // csv response
+        case 'csv': {
+            chunked = new ChunkedCSV(res).open('gid', 'team', 'gn', 'pitcher', ...[1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((i) => [`pid${i}`, `pos${i}`]));
+            await docs.each(({
+                gid,
+                team,
+                gameNumber,
+                pitcher,
+                lineup,
+            }) => {
+                chunked.write([gid, team, gameNumber, pitcher, ...lineup.flatMap(({ pid, pos }) => [pid, pos])].join(','));
+            });
+            break;
+        }
+        // error 406
+        default:
+            return void next(406);
+    }
+    // close chunked response
+    chunked.close();
+}
+
 module.exports = {
     scores,
     info,
+    lineups,
 };
