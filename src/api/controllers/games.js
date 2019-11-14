@@ -153,15 +153,16 @@ async function lineups(req, res, next) {
             break;
         // csv response
         case 'csv': {
-            chunked = new ChunkedCSV(res).open('gid', 'team', 'gameNumber', 'pitcher', ...[1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((i) => [`pid${i}`, `pos${i}`]));
+            chunked = new ChunkedCSV(res).open('gid', 'team', 'home', 'gameNumber', 'pitcher', ...[1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((i) => [`pid${i}`, `pos${i}`]));
             await docs.each(({
                 gid,
                 team,
+                home,
                 gameNumber,
                 pitcher,
                 lineup,
             }) => {
-                chunked.write([gid, team, gameNumber, pitcher, ...lineup.flatMap(({ pid, pos }) => [pid, pos])].join(','));
+                chunked.write([gid, team, home ? 1 : 0, gameNumber, pitcher, ...lineup.flatMap(({ pid, pos }) => [pid, pos])].join(','));
             });
             break;
         }

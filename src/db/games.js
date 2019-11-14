@@ -72,12 +72,14 @@ function gameLineups({ year, team }) {
                             in: [
                                 {
                                     team: '$away',
+                                    home: false,
                                     gameNumber: '$awayGameNumber',
                                     pitcher: { $substr: ['$$alineup', 0, 8] },
                                     lineup: { $slice: [{ $split: ['$$alineup', ','] }, 1, 9] },
                                 },
                                 {
                                     team: '$home',
+                                    home: true,
                                     gameNumber: '$homeGameNumber',
                                     pitcher: { $substr: ['$$hlineup', 0, 8] },
                                     lineup: { $slice: [{ $split: ['$$hlineup', ','] }, 1, 9] },
@@ -95,8 +97,9 @@ function gameLineups({ year, team }) {
                 newRoot: {
                     gid: '$gid',
                     team: '$teams.team',
-                    pitcher: '$teams.pitcher',
+                    home: '$teams.home',
                     gameNumber: '$teams.gameNumber',
+                    pitcher: '$teams.pitcher',
                     lineup: {
                         $map: {
                             input: '$teams.lineup',
