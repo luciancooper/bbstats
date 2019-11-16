@@ -17,6 +17,7 @@ async function unzip(req, res, next) {
         teamOpps = { modified: 0, inserted: 0, files: [] },
         gameOpps = { inserted: 0, files: [] },
         teamGames = {},
+        teamLeagues = {},
         processor = rosters.processor();
     request(`https://www.retrosheet.org/events/${year}eve.zip`)
         .pipe(unzipper.Parse())
@@ -38,8 +39,8 @@ async function unzip(req, res, next) {
                                 if (!teamGames[home]) teamGames[home] = [];
                                 if (!teamGames[away]) teamGames[away] = [];
                                 // add games to team games object
-                                teamGames[home].push([gid, 'homeGameNumber']);
-                                teamGames[away].push([gid, 'awayGameNumber']);
+                                teamGames[home].push([gid, 'home']);
+                                teamGames[away].push([gid, 'away']);
                                 // continue pushing game through the pipeline
                                 this.push(game);
                                 done();
@@ -73,6 +74,17 @@ async function unzip(req, res, next) {
                 } else if (/^TEAM[0-9]{4}$/.test(path)) {
                     // teams file
                     entry.pipe(teams.parser())
+                        .pipe(Transform({
+                            objectMode: true,
+                            transform(team, e, done) {
+                                const { _id, lg } = team;
+                                // add team to leagues object
+                                teamLeagues[_id] = lg;
+                                // continue pushing team through the pipeline
+                                this.push(team);
+                                done();
+                            },
+                        }))
                         .pipe(teams.writer(year))
                         .pipe(Writable({
                             objectMode: true,
@@ -92,8 +104,9 @@ async function unzip(req, res, next) {
             },
             flush(callback) {
                 // sort each tam schedule and push through the pipeline
-                Object.values(teamGames).forEach((s) => {
-                    this.push(s.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map((g, i) => [...g, i + 1]));
+                Object.entries(teamGames).forEach(([team, s]) => {
+                    const lg = teamLeagues[team];
+                    this.push(s.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map((g, i) => [...g, lg, i + 1]));
                 }, this);
                 callback();
             },
@@ -103,8 +116,10 @@ async function unzip(req, res, next) {
             async transform(schedule, enc, done) {
                 // update game number values in the 'games' collection
                 for (let i = 0, n = schedule.length; i < n; i += 1) {
-                    const [_id, key, index] = schedule[i];
-                    await db().collection('games').updateOne({ _id }, { $set: { [key]: index } });
+                    const [_id, tkey, lg, index] = schedule[i];
+                    await db().collection('games').updateOne({ _id }, {
+                        $set: { [`${tkey}League`]: lg, [`${tkey}GameNumber`]: index },
+                    });
                 }
                 done();
             },

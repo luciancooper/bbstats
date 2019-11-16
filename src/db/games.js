@@ -4,7 +4,7 @@ const { db } = require('./service'),
 function gameData({ year, team }) {
     return new DataCursor(db().collection('games').aggregate([
         { $match: team ? { $and: [{ year }, { $or: [{ home: team }, { away: team }] }] } : { year } },
-        { $sort: { month: 1, day: 1, gn: 1 } },
+        { $sort: { _id: 1 } },
         { $replaceRoot: { newRoot: { $mergeObjects: [{ gid: '$_id' }, '$$ROOT'] } } },
         { $project: { _id: 0 } },
     ]));
@@ -63,6 +63,7 @@ function gameLineups({ year, team }) {
             $replaceRoot: {
                 newRoot: {
                     gid: '$_id',
+                    date: { $concat: [{ $toString: '$year' }, '-', '$date'] },
                     teams: {
                         $let: {
                             vars: {
@@ -96,6 +97,7 @@ function gameLineups({ year, team }) {
             $replaceRoot: {
                 newRoot: {
                     gid: '$gid',
+                    date: '$date',
                     team: '$teams.team',
                     home: '$teams.home',
                     gameNumber: '$teams.gameNumber',

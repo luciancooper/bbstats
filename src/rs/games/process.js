@@ -588,10 +588,9 @@ function processGame(lines) {
         v;
     // assert i === 'g'
     const year = Number(l.slice(3, 7)),
-        month = Number(l.slice(7, 9)),
-        day = Number(l.slice(9, 11)),
+        month = l.slice(7, 9),
+        day = l.slice(9, 11),
         gn = Number(l[11]),
-        date = l.slice(3, 11),
         home = l.slice(0, 3),
         info = {};
     [i, l] = lines[j += 1];
@@ -667,13 +666,14 @@ function processGame(lines) {
     }
     pitching.er = er.join(';');
     return {
-        _id: `${date}${home}${away}${gn}`,
+        _id: `${year}${month}${day}${home}${away}${gn}`,
         year,
-        month,
-        day,
+        date: `${month}-${day}`,
         gn,
         home,
         away,
+        homeLeague: null,
+        awayLeague: null,
         homeGameNumber: 0,
         awayGameNumber: 0,
         site,
