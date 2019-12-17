@@ -6,20 +6,21 @@ const request = require('request'),
     rosters = require('./rosters'),
     teams = require('./teams');
 
-async function unzip(req, res, next) {
-    // remove timeout
-    req.setTimeout(0);
-    const { year } = req.params,
-        clearGames = await games.clear(year),
-        clearPlayers = await rosters.clear(year),
-        clearTeams = await teams.clear(year),
-        playerOpps = { modified: 0, inserted: 0, files: [] },
+function unzip(year, reportObj) {
+    const playerOpps = { modified: 0, inserted: 0, files: [] },
         teamOpps = { modified: 0, inserted: 0, files: [] },
         gameOpps = { inserted: 0, files: [] },
         teamGames = {},
         teamLeagues = {},
         processor = rosters.processor();
-    request(`https://www.retrosheet.org/events/${year}eve.zip`)
+    if (reportObj) {
+        Object.assign(reportObj, {
+            games: gameOpps,
+            players: playerOpps,
+            teams: teamOpps,
+        });
+    }
+    return request(`https://www.retrosheet.org/events/${year}eve.zip`)
         .pipe(unzipper.Parse())
         .pipe(Transform({
             objectMode: true,
@@ -123,14 +124,24 @@ async function unzip(req, res, next) {
                 }
                 done();
             },
-        }))
-        .on('finish', () => {
-            res.json({
-                games: { ...clearGames, ...gameOpps },
-                players: { cleared: clearPlayers, ...playerOpps },
-                teams: { cleared: clearTeams, ...teamOpps },
-            });
+        }));
+}
+
+async function populate(req, res, next) {
+    // remove timeout
+    req.setTimeout(0);
+    const { year } = req.params,
+        clearGames = await games.clear(year),
+        clearPlayers = await rosters.clear(year),
+        clearTeams = await teams.clear(year),
+        report = {};
+    unzip(year, report).on('finish', () => {
+        res.json({
+            games: { ...clearGames, ...report.games },
+            players: { cleared: clearPlayers, ...report.players },
+            teams: { cleared: clearTeams, ...report.teams },
         });
+    });
 }
 
 async function clear(req, res, next) {
@@ -177,6 +188,7 @@ async function summary(req, res, next) {
 
 module.exports = {
     unzip,
+    populate,
     clear,
     summary,
 };
