@@ -8,7 +8,8 @@
     "dev": "nodemon --watch src --watch .env src/server.js",
     "lint": "eslint --ignore-path .gitignore -f pretty src",
     "lint:fix": "eslint --ignore-path .gitignore -f pretty src --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "node ./scripts/setup.js"
   },
   "repository": {
     "type": "git",
