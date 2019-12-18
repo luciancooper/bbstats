@@ -9,7 +9,8 @@
     "lint": "eslint --ignore-path .gitignore -f pretty src",
     "lint:fix": "eslint --ignore-path .gitignore -f pretty src --fix",
     "test": "node ./scripts/test.js",
-    "setup": "node ./scripts/setup.js"
+    "setup": "node ./scripts/setup.js",
+    "build": "node ./scripts/build.js"
   },
   "repository": {
     "type": "git",
