@@ -6,7 +6,7 @@ const request = require('request'),
     rosters = require('./rosters'),
     teams = require('./teams');
 
-function unzip(year, reportObj) {
+function unzip(year, reportObj, fileCallback) {
     const playerOpps = { modified: 0, inserted: 0, files: [] },
         teamOpps = { modified: 0, inserted: 0, files: [] },
         gameOpps = { inserted: 0, files: [] },
@@ -26,9 +26,9 @@ function unzip(year, reportObj) {
             objectMode: true,
             transform(entry, enc, cb) {
                 const { path } = entry;
-                console.log(`[${year}] unzipping ${path}`);
                 if (/\.E[VD][NA]$/.test(path)) {
                     // event file
+                    if (fileCallback) fileCallback({ type: 'event', path });
                     entry.pipe(games.parser())
                         .pipe(processor.eve())
                         .pipe(games.processor())
@@ -59,6 +59,7 @@ function unzip(year, reportObj) {
                         .on('finish', cb);
                 } else if (/\.ROS$/.test(path)) {
                     // rosters file
+                    if (fileCallback) fileCallback({ type: 'roster', path });
                     entry.pipe(rosters.parser())
                         .pipe(processor.ros())
                         .pipe(rosters.writer(year))
@@ -74,6 +75,7 @@ function unzip(year, reportObj) {
                         .on('finish', cb);
                 } else if (/^TEAM[0-9]{4}$/.test(path)) {
                     // teams file
+                    if (fileCallback) fileCallback({ type: 'teams', path });
                     entry.pipe(teams.parser())
                         .pipe(Transform({
                             objectMode: true,
@@ -135,7 +137,9 @@ async function populate(req, res, next) {
         clearPlayers = await rosters.clear(year),
         clearTeams = await teams.clear(year),
         report = {};
-    unzip(year, report).on('finish', () => {
+    unzip(year, report, ({ type, path }) => {
+        console.log(`[${year}] ${type} ${path}`);
+    }).on('finish', () => {
         res.json({
             games: { ...clearGames, ...report.games },
             players: { cleared: clearPlayers, ...report.players },

@@ -1,10 +1,22 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const chalk = require('chalk'),
+    ora = require('ora'),
     { initPool } = require('../src/db/service'),
     { unzip } = require('../src/rs');
 
 // configure env
 require('dotenv').config();
+
+function fmtTime(seconds) {
+    const sec = seconds % 60,
+        min = Math.floor((seconds / 60) % 60),
+        hour = Math.floor((seconds / 3600) % 24);
+    return hour
+        ? `${hour}h ${min}m`
+        : min
+            ? `${min}m ${sec}s`
+            : `${sec}s`;
+}
 
 // parse input years
 const years = [...new Set([...process.argv[2].split(',').flatMap((a) => {
@@ -17,7 +29,7 @@ const years = [...new Set([...process.argv[2].split(',').flatMap((a) => {
     return yspan;
 })])].sort();
 
-console.log(chalk`{bold build}:`, years);
+console.log(chalk`{bold populating database with games from}`, years.map((y) => chalk`{bold {yellow ${y}}}`).join(', '));
 
 // connect to database
 initPool(async (err) => {
@@ -25,13 +37,20 @@ initPool(async (err) => {
         console.log(`Database connection error: ${err}`);
         process.exit(1);
     }
-    for (let i = 0, year; i < years.length; i += 1) {
+    for (let i = 0, year, spinner, time, log; i < years.length; i += 1) {
         year = years[i];
-        console.log(chalk`Unzipping {bold ${year}}`);
-        // unzip the specified years
-        const log = await new Promise((resolve) => {
+        time = process.hrtime();
+        spinner = ora({
+            prefixText: chalk`{bold {yellow ${year}}}`,
+            text: chalk`{bold Fetching data}`,
+        }).start();
+        // unzip the specified year
+        log = await new Promise((resolve) => {
             const report = {};
-            unzip(year, report).on('finish', () => {
+            unzip(year, report, ({ type, path }) => {
+                spinner.text = chalk`{bold Unzipping ${type} file {cyan ${path}}}`;
+            }).on('finish', () => {
+                spinner.succeed(chalk`{bold Unzipped in ${fmtTime(...process.hrtime(time))}}`);
                 resolve(report);
             });
         });

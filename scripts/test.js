@@ -1,11 +1,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const { MongoClient } = require('mongodb'),
-    chalk = require('chalk');
+    chalk = require('chalk'),
+    ora = require('ora');
 
 // configure env
 require('dotenv').config();
 
-console.log('Testing database connection...');
+const spinner = ora(chalk`{bold Testing mongodb connection...}`).start();
 
 MongoClient.connect(process.env.DATABASE_URL, {
     poolSize: process.env.POOL_SIZE || 5,
@@ -13,14 +14,15 @@ MongoClient.connect(process.env.DATABASE_URL, {
     useUnifiedTopology: true,
 }, async (err, client) => {
     if (err) {
-        console.log(chalk`{cyan Database connection test}: {red failed}`);
+        spinner.fail(chalk`{bold mongodb connection test} {bold {red failed}}`);
         console.log(chalk`  {red ${err.name}}: {yellow ${err.message}}`);
     } else {
-        console.log(chalk`{cyan Database connection test}: {green success}`);
-        console.log(chalk`  {yellow host}: {cyan ${client.s.options.srvHost}}`);
-        console.log(chalk`  {yellow database}: {cyan ${client.s.options.dbName}}`);
-        const collections = (await client.db().collections()).map((c) => c.s.namespace.collection);
-        console.log(chalk`  {yellow collections}:`, collections.length ? collections.map((c) => chalk`{cyan ${c}}`).join(' , ') : chalk`{bold None}`);
+        spinner.succeed(chalk`{bold mongodb connection test} {bold {green succeeded}}`);
+        const { srvHost, dbName } = client.s.options,
+            collections = (await client.db().collections()).map((c) => c.s.namespace.collection);
+        console.log(chalk`  {yellow {bold host}}:`, srvHost ? chalk`{cyan {bold ${srvHost}}}` : chalk`{bold None}`);
+        console.log(chalk`  {yellow {bold database}}: {cyan {bold ${dbName}}}`);
+        console.log(chalk`  {yellow {bold collections}}:`, collections.length ? collections.map((c) => chalk`{cyan {bold ${c}}}`).join(', ') : chalk`{bold None}`);
         client.close();
     }
     process.exit(0);
